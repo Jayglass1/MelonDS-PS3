@@ -1,0 +1,4 @@
+OPENSSL_1_1_0 {
+  global: AES_set_encrypt_key; AES_encrypt; CRYPTO_ctr128_encrypt; SHA1; SHA1_Init; SHA1_Update; SHA1_Final;
+  local: *;
+};

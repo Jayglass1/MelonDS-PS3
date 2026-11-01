@@ -56,8 +56,34 @@ CFLAGS := $(COMMON)
 
 LIBS := -L$(PSL1GHT)/ppu/lib -laudio -lrsx -lgcm_sys -lio -lsysutil -lrt -llv2 -lm
 
-.PHONY: all clean
+.PHONY: all clean pkg
 all: $(TARGET).self
+
+# ---- installable package ---------------------------------------------------
+#   make pkg   ->  melonds-ps3.pkg           (debug type; RPCS3, debug firmware)
+#                  melonds-ps3.gnpdrm.pkg    (finalized; custom firmware)
+# Needs make_self_npdrm and package_finalize from ps3dev. If they complain about
+# libcrypto.so.1.1, run tools/build-shim.sh and then
+#   LD_LIBRARY_PATH=$PWD/tools make pkg
+# PARAM.SFO and the package itself are made by tools/ps3pkg.py (Python 3).
+TITLE := melonDS PS3
+APPID := MELONDS00
+PS3PKG ?= python3 tools/ps3pkg.py
+PKGDIR := $(BUILD)/pkg
+
+pkg: $(TARGET).gnpdrm.pkg
+
+$(TARGET).pkg: $(TARGET).elf
+	rm -rf $(PKGDIR)
+	mkdir -p $(PKGDIR)/USRDIR
+	cp $(ICON0) $(PKGDIR)/ICON0.PNG
+	$(SELF_NPDRM) $< $(PKGDIR)/USRDIR/EBOOT.BIN $(CONTENTID) > /dev/null
+	$(PS3PKG) sfo --xml $(SFOXML) --title "$(TITLE)" --appid "$(APPID)" $(PKGDIR)/PARAM.SFO
+	$(PS3PKG) pkg --contentid $(CONTENTID) $(PKGDIR) $@
+
+$(TARGET).gnpdrm.pkg: $(TARGET).pkg
+	cp $< $@
+	$(PACKAGE_FINALIZE) $@
 
 # Fake-sign with fself (ships with ps3dev). The stock "%.self" rule from
 # ppu_rules calls make_self, which needs libcrypto.so.1.1. A fake-signed SELF
@@ -86,4 +112,4 @@ $(BUILD)/front/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(BUILD) $(TARGET).elf $(TARGET).self
+	rm -rf $(BUILD) $(TARGET).elf $(TARGET).self $(TARGET).pkg $(TARGET).gnpdrm.pkg

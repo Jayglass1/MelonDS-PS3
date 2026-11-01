@@ -1,4 +1,7 @@
 # PS3 build outputs
 melonds-ps3.elf
 melonds-ps3.self
+*.pkg
+__pycache__/
+tools/libcrypto.so.1.1
 build/

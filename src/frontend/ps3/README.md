@@ -40,6 +40,34 @@ On x86 (sandbox):
 any game (no ROM was available); whether the `.self` actually loads. It is
 fake-signed, so it needs custom firmware or RPCS3; stock firmware will refuse it.
 
+## Building and installing the package
+
+    export PS3DEV=... PSL1GHT=...     # your ps3dev install
+    make pkg
+
+This produces `melonds-ps3.pkg` (debug type: RPCS3, debug firmware) and
+`melonds-ps3.gnpdrm.pkg` (finalized: custom firmware). Content ID
+`UP0001-MELONDS00_00-0000000000000000`, installed to
+`/dev_hdd0/game/MELONDS00/`. The icon is ps3dev's stock `ICON0.PNG`.
+
+- `make_self_npdrm` and `package_finalize` need `libcrypto.so.1.1`. On a system
+  with only OpenSSL 3, run `tools/build-shim.sh` once and then
+  `LD_LIBRARY_PATH=$PWD/tools make pkg`. The shim forwards the seven OpenSSL
+  functions those tools use to the system `libcrypto.so.3`.
+- `PARAM.SFO` and the package are built by `tools/ps3pkg.py`, a Python 3 port of
+  ps3dev's `sfo.py` and `pkg.py` (which need Python 2). The cipher is the
+  pure-Python reference implementation from `pkg.py` instead of `pkgcrypt.so`.
+- `python3 tools/ps3pkg.py list|check file.pkg [dir]` decrypts a package and
+  lists it or compares it with the source files.
+- **Verified:** `make pkg` from a clean tree succeeds; the package decrypts back
+  to exactly the staged files; `package_finalize` runs and flips the type from
+  `0x1` to `0x80000001`. **Not verified:** installing it anywhere. The check uses
+  the same cipher code in both directions, so it proves the format is
+  self-consistent, not that a console or RPCS3 accepts it. `ps3pkg.py` was not
+  compared byte-for-byte against the original Python 2 `pkg.py` (no Python 2
+  here). Where that file is concerned, the signed EBOOT is packaged as-is, as
+  `pkg.py` does for signed SELFs.
+
 ## Layout
 
 | File | Role | Verified |
@@ -53,7 +81,9 @@ fake-signed, so it needs custom firmware or RPCS3; stock firmware will refuse it
 | `AudioRing.h` (+ `AudioRing_test.cpp`) | Audio ring buffer and block-scheduling policy | unit-tested on host (ASan/UBSan) |
 | `Audio_PS3.cpp` | Writes float blocks into the PS3 audio port | compiles and links; **never run** |
 | `compat.h` | std::mutex / to_string / snprintf stand-ins for the PS3 libstdc++ | compiles |
-| `Makefile` | PS3 build (`make` with PS3DEV/PSL1GHT set) | builds the ELF and a fake-signed `.self` (`fself`) |
+| `Makefile` | PS3 build (`make` with PS3DEV/PSL1GHT set) | builds the ELF, a fake-signed `.self` (`fself`), and (`make pkg`) the packages |
+| `tools/ps3pkg.py` | PARAM.SFO and .pkg builder (Python 3 port of sfo.py/pkg.py) | round-trip checked |
+| `tools/libcrypto11_shim.c`, `build-shim.sh` | libcrypto.so.1.1 shim for the signing tools | builds; tools run with it |
 
 Host runner:
 
