@@ -110,3 +110,8 @@ add_subdirectory(src)
 if (BUILD_QT_SDL)
     add_subdirectory(src/frontend/qt_sdl)
 endif()
+
+option(BUILD_PS3_HEADLESS "Build the headless runner for the PS3 frontend code" OFF)
+if (BUILD_PS3_HEADLESS)
+    add_subdirectory(src/frontend/ps3)
+endif()
