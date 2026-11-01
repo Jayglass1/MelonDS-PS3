@@ -225,6 +225,10 @@ private:
 
     void Key1_Encrypt(u32* data) const noexcept;
     void Key1_Decrypt(u32* data) const noexcept;
+    // Same, for an 8-byte block in a byte buffer (ROM data, commands), which holds
+    // its two words in little-endian order on any host.
+    void Key1_Encrypt(u8* data) const noexcept;
+    void Key1_Decrypt(u8* data) const noexcept;
     void Key1_ApplyKeycode(u32* keycode, u32 mod) noexcept;
     void Key1_LoadKeyBuf(bool dsi) noexcept;
     void Key1_InitKeycode(bool dsi, u32 idcode, u32 level, u32 mod) noexcept;

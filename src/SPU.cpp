@@ -430,7 +430,10 @@ void SPUChannel::FIFO_BufferData()
     {
         for (u32 i = 0; i < burstlen; i += 4)
         {
-            FIFO[FIFOWritePos] = NDS.ARM7Read32(SrcAddr + FIFOReadOffset);
+            // FIFO is read back one byte, halfword or word at a time through a
+            // byte view (see FIFO_ReadData), so each word is kept in little-endian
+            // byte order regardless of the host's.
+            FIFO[FIFOWritePos] = Endian::LE32(NDS.ARM7Read32(SrcAddr + FIFOReadOffset));
             FIFOReadOffset += 4;
             FIFOWritePos++;
             FIFOWritePos &= 0x7;
@@ -453,7 +456,7 @@ void SPUChannel::FIFO_BufferData()
 template<typename T>
 T SPUChannel::FIFO_ReadData()
 {
-    T ret = *(T*)&((u8*)FIFO)[FIFOReadPos];
+    T ret = *(le_t<T>*)&((u8*)FIFO)[FIFOReadPos];
 
     FIFOReadPos += sizeof(T);
     FIFOReadPos &= 0x1F;
@@ -774,7 +777,8 @@ void SPUCaptureUnit::FIFO_FlushData()
 {
     for (u32 i = 0; i < 4; i++)
     {
-        NDS.ARM7Write32(DstAddr + FIFOWriteOffset, FIFO[FIFOReadPos]);
+        // words are stored in little-endian byte order (see FIFO_WriteData)
+        NDS.ARM7Write32(DstAddr + FIFOWriteOffset, Endian::LE32(FIFO[FIFOReadPos]));
         // Calls the NDS or DSi version, depending on the class
 
         FIFOReadPos++;
@@ -793,7 +797,7 @@ void SPUCaptureUnit::FIFO_FlushData()
 template<typename T>
 void SPUCaptureUnit::FIFO_WriteData(T val)
 {
-    *(T*)&((u8*)FIFO)[FIFOWritePos] = val;
+    *(le_t<T>*)&((u8*)FIFO)[FIFOWritePos] = val;
 
     FIFOWritePos += sizeof(T);
     FIFOWritePos &= 0xF;

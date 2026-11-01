@@ -83,24 +83,24 @@ NANDImage::NANDImage(Platform::FileHandle* nandfile, const u8* es_keyY) noexcept
 
     Bswap128(FATIV.data(), tmp);
 
-    *(u32*)&keyX[0] = (u32)ConsoleID;
-    *(u32*)&keyX[4] = (u32)ConsoleID ^ 0x24EE6906;
-    *(u32*)&keyX[8] = (u32)(ConsoleID >> 32) ^ 0xE65B601D;
-    *(u32*)&keyX[12] = (u32)(ConsoleID >> 32);
+    *(le_u32*)&keyX[0] = (u32)ConsoleID;
+    *(le_u32*)&keyX[4] = (u32)ConsoleID ^ 0x24EE6906;
+    *(le_u32*)&keyX[8] = (u32)(ConsoleID >> 32) ^ 0xE65B601D;
+    *(le_u32*)&keyX[12] = (u32)(ConsoleID >> 32);
 
-    *(u32*)&keyY[0] = 0x0AB9DC76;
-    *(u32*)&keyY[4] = 0xBD4DC4D3;
-    *(u32*)&keyY[8] = 0x202DDD1D;
-    *(u32*)&keyY[12] = 0xE1A00005;
+    *(le_u32*)&keyY[0] = 0x0AB9DC76;
+    *(le_u32*)&keyY[4] = 0xBD4DC4D3;
+    *(le_u32*)&keyY[8] = 0x202DDD1D;
+    *(le_u32*)&keyY[12] = 0xE1A00005;
 
     DSi_AES::DeriveNormalKey(keyX, keyY, tmp);
     Bswap128(FATKey.data(), tmp);
 
 
-    *(u32*)&keyX[0] = 0x4E00004A;
-    *(u32*)&keyX[4] = 0x4A00004E;
-    *(u32*)&keyX[8] = (u32)(ConsoleID >> 32) ^ 0xC80C4B72;
-    *(u32*)&keyX[12] = (u32)ConsoleID;
+    *(le_u32*)&keyX[0] = 0x4E00004A;
+    *(le_u32*)&keyX[4] = 0x4A00004E;
+    *(le_u32*)&keyX[8] = (u32)(ConsoleID >> 32) ^ 0xC80C4B72;
+    *(le_u32*)&keyX[12] = (u32)ConsoleID;
 
     memcpy(keyY, es_keyY, sizeof(keyY));
 
@@ -931,11 +931,11 @@ bool NANDMount::CreateTicket(const char* path, u32 titleid0, u32 titleid1, u8 ve
     memset(ticket, 0, 0x2C4);
 
     // signature, atleast make it look like we tried :P
-    *(u32*)&ticket[0x000] = 0x01000100;
+    *(le_u32*)&ticket[0x000] = 0x01000100;
     strcpy((char*)&ticket[0x140], "Root-CA00000001-XS00000006");
 
-    *(u32*)&ticket[0x1DC] = titleid0;
-    *(u32*)&ticket[0x1E0] = titleid1;
+    *(le_u32*)&ticket[0x1DC] = titleid0;
+    *(le_u32*)&ticket[0x1E0] = titleid1;
     ticket[0x1E6] = version;
 
     memset(&ticket[0x222], 0xFF, 0x20);
@@ -1014,22 +1014,22 @@ bool NANDMount::CreateSaveFile(const char* path, u32 len)
     // create FAT header
     data[0x000] = 0xE9;
     memcpy(&data[0x003], "MSWIN4.1", 8);
-    *(u16*)&data[0x00B] = sectorsize; // bytes per sector
+    *(le_u16*)&data[0x00B] = sectorsize; // bytes per sector
     data[0x00D] = clustersize;
-    *(u16*)&data[0x00E] = 1; // reserved sectors
+    *(le_u16*)&data[0x00E] = 1; // reserved sectors
     data[0x010] = 2; // num FATs
-    *(u16*)&data[0x011] = maxfiles;
-    *(u16*)&data[0x013] = totsec16;
+    *(le_u16*)&data[0x011] = maxfiles;
+    *(le_u16*)&data[0x013] = totsec16;
     data[0x015] = 0xF8;
-    *(u16*)&data[0x016] = fatsz16;
-    *(u16*)&data[0x018] = tracksize;
-    *(u16*)&data[0x01A] = headcount;
+    *(le_u16*)&data[0x016] = fatsz16;
+    *(le_u16*)&data[0x018] = tracksize;
+    *(le_u16*)&data[0x01A] = headcount;
     data[0x024] = 0x05;
     data[0x026] = 0x29;
-    *(u32*)&data[0x027] = 0x12345678;
+    *(le_u32*)&data[0x027] = 0x12345678;
     memcpy(&data[0x02B], "VOLUMELABEL", 11);
     memcpy(&data[0x036], "FAT12   ", 8);
-    *(u16*)&data[0x1FE] = 0xAA55;
+    *(le_u16*)&data[0x1FE] = 0xAA55;
 
     f_write(&file, data, len, &nwrite);
 

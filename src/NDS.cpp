@@ -308,7 +308,7 @@ void NDS::SetupDirectBoot()
 
     for (u32 i = 0; i < 0x170; i+=4)
     {
-        u32 tmp = *(u32*)&cartrom[i];
+        u32 tmp = *(le_u32*)&cartrom[i];
         NDS::ARM9Write32(0x027FFE00+i, tmp);
     }
 
@@ -338,7 +338,7 @@ void NDS::SetupDirectBoot()
 
         for (u32 i = 0; i < 0x800; i+=4)
         {
-            NDS::ARM9Write32(header.ARM9RAMAddress+i, *(u32*)&securearea[i]);
+            NDS::ARM9Write32(header.ARM9RAMAddress+i, *(le_u32*)&securearea[i]);
             arm9start += 4;
         }
     }
@@ -347,13 +347,13 @@ void NDS::SetupDirectBoot()
 
     for (u32 i = arm9start; i < header.ARM9Size; i+=4)
     {
-        u32 tmp = *(u32*)&cartrom[header.ARM9ROMOffset+i];
+        u32 tmp = *(le_u32*)&cartrom[header.ARM9ROMOffset+i];
         NDS::ARM9Write32(header.ARM9RAMAddress+i, tmp);
     }
 
     for (u32 i = 0; i < header.ARM7Size; i+=4)
     {
-        u32 tmp = *(u32*)&cartrom[header.ARM7ROMOffset+i];
+        u32 tmp = *(le_u32*)&cartrom[header.ARM7ROMOffset+i];
         NDS::ARM7Write32(header.ARM7RAMAddress+i, tmp);
     }
 
@@ -1788,6 +1788,20 @@ void NDS::StopDMAs(u32 cpu, u32 mode)
 
 
 
+// The divider and square root registers are kept as pairs of 32-bit words,
+// low word first. These read and write the pair as one 64-bit value without
+// depending on the host's byte order.
+static inline u64 GetWordPair(const u32* w)
+{
+    return ((u64)w[1] << 32) | (u64)w[0];
+}
+
+static inline void SetWordPair(u32* w, u64 v)
+{
+    w[0] = (u32)v;
+    w[1] = (u32)(v >> 32);
+}
+
 void NDS::DivDone(u32 param)
 {
     DivCnt &= ~0xC000;
@@ -1802,16 +1816,16 @@ void NDS::DivDone(u32 param)
             {
                 DivQuotient[0] = (num<0) ? 1:-1;
                 DivQuotient[1] = (num<0) ? -1:0;
-                *(s64*)&DivRemainder[0] = num;
+                SetWordPair(DivRemainder, (u64)(num));
             }
             else if (num == -0x80000000 && den == -1)
             {
-                *(s64*)&DivQuotient[0] = 0x80000000;
+                SetWordPair(DivQuotient, (u64)(0x80000000));
             }
             else
             {
-                *(s64*)&DivQuotient[0] = (s64)(num / den);
-                *(s64*)&DivRemainder[0] = (s64)(num % den);
+                SetWordPair(DivQuotient, (u64)((s64)(num / den)));
+                SetWordPair(DivRemainder, (u64)((s64)(num % den)));
             }
         }
         break;
@@ -1819,44 +1833,44 @@ void NDS::DivDone(u32 param)
     case 0x0001:
     case 0x0003:
         {
-            s64 num = *(s64*)&DivNumerator[0];
+            s64 num = (s64)GetWordPair(DivNumerator);
             s32 den = (s32)DivDenominator[0];
             if (den == 0)
             {
-                *(s64*)&DivQuotient[0] = (num<0) ? 1:-1;
-                *(s64*)&DivRemainder[0] = num;
+                SetWordPair(DivQuotient, (u64)((num<0) ? 1:-1));
+                SetWordPair(DivRemainder, (u64)(num));
             }
             else if (num == -0x8000000000000000 && den == -1)
             {
-                *(s64*)&DivQuotient[0] = 0x8000000000000000;
-                *(s64*)&DivRemainder[0] = 0;
+                SetWordPair(DivQuotient, (u64)(0x8000000000000000));
+                SetWordPair(DivRemainder, (u64)(0));
             }
             else
             {
-                *(s64*)&DivQuotient[0] = (s64)(num / den);
-                *(s64*)&DivRemainder[0] = (s64)(num % den);
+                SetWordPair(DivQuotient, (u64)((s64)(num / den)));
+                SetWordPair(DivRemainder, (u64)((s64)(num % den)));
             }
         }
         break;
 
     case 0x0002:
         {
-            s64 num = *(s64*)&DivNumerator[0];
-            s64 den = *(s64*)&DivDenominator[0];
+            s64 num = (s64)GetWordPair(DivNumerator);
+            s64 den = (s64)GetWordPair(DivDenominator);
             if (den == 0)
             {
-                *(s64*)&DivQuotient[0] = (num<0) ? 1:-1;
-                *(s64*)&DivRemainder[0] = num;
+                SetWordPair(DivQuotient, (u64)((num<0) ? 1:-1));
+                SetWordPair(DivRemainder, (u64)(num));
             }
             else if (num == -0x8000000000000000 && den == -1)
             {
-                *(s64*)&DivQuotient[0] = 0x8000000000000000;
-                *(s64*)&DivRemainder[0] = 0;
+                SetWordPair(DivQuotient, (u64)(0x8000000000000000));
+                SetWordPair(DivRemainder, (u64)(0));
             }
             else
             {
-                *(s64*)&DivQuotient[0] = (s64)(num / den);
-                *(s64*)&DivRemainder[0] = (s64)(num % den);
+                SetWordPair(DivQuotient, (u64)((s64)(num / den)));
+                SetWordPair(DivRemainder, (u64)((s64)(num % den)));
             }
         }
         break;
@@ -1886,7 +1900,7 @@ void NDS::SqrtDone(u32 param)
 
     if (SqrtCnt & 0x0001)
     {
-        val = *(u64*)&SqrtVal[0];
+        val = GetWordPair(SqrtVal);
         nbits = 32;
         topshift = 62;
     }
@@ -2038,18 +2052,18 @@ u16 NDS::ARM9Read16(u32 addr)
 
     if ((addr & 0xFFFFF000) == 0xFFFF0000)
     {
-        return *(u16*)&ARM9BIOS[addr & 0xFFF];
+        return *(le_u16*)&ARM9BIOS[addr & 0xFFF];
     }
 
     switch (addr & 0xFF000000)
     {
     case 0x02000000:
-        return *(u16*)&MainRAM[addr & MainRAMMask];
+        return *(le_u16*)&MainRAM[addr & MainRAMMask];
 
     case 0x03000000:
         if (SWRAM_ARM9.Mem)
         {
-            return *(u16*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask];
+            return *(le_u16*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask];
         }
         else
         {
@@ -2098,18 +2112,18 @@ u32 NDS::ARM9Read32(u32 addr)
 
     if ((addr & 0xFFFFF000) == 0xFFFF0000)
     {
-        return *(u32*)&ARM9BIOS[addr & 0xFFF];
+        return *(le_u32*)&ARM9BIOS[addr & 0xFFF];
     }
 
     switch (addr & 0xFF000000)
     {
     case 0x02000000:
-        return *(u32*)&MainRAM[addr & MainRAMMask];
+        return *(le_u32*)&MainRAM[addr & MainRAMMask];
 
     case 0x03000000:
         if (SWRAM_ARM9.Mem)
         {
-            return *(u32*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask];
+            return *(le_u32*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask];
         }
         else
         {
@@ -2202,14 +2216,14 @@ void NDS::ARM9Write16(u32 addr, u16 val)
     {
     case 0x02000000:
         JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u16*)&MainRAM[addr & MainRAMMask] = val;
+        *(le_u16*)&MainRAM[addr & MainRAMMask] = val;
         return;
 
     case 0x03000000:
         if (SWRAM_ARM9.Mem)
         {
             JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_SharedWRAM>(addr);
-            *(u16*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask] = val;
+            *(le_u16*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask] = val;
         }
         return;
 
@@ -2262,14 +2276,14 @@ void NDS::ARM9Write32(u32 addr, u32 val)
     {
     case 0x02000000:
         JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u32*)&MainRAM[addr & MainRAMMask] = val;
+        *(le_u32*)&MainRAM[addr & MainRAMMask] = val;
         return ;
 
     case 0x03000000:
         if (SWRAM_ARM9.Mem)
         {
             JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_SharedWRAM>(addr);
-            *(u32*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask] = val;
+            *(le_u32*)&SWRAM_ARM9.Mem[addr & SWRAM_ARM9.Mask] = val;
         }
         return;
 
@@ -2426,27 +2440,27 @@ u16 NDS::ARM7Read16(u32 addr)
         if (addr < ARM7BIOSProt && ARM7.R[15] >= ARM7BIOSProt)
             return 0xFFFF;
 
-        return *(u16*)&ARM7BIOS[addr];
+        return *(le_u16*)&ARM7BIOS[addr];
     }
 
     switch (addr & 0xFF800000)
     {
     case 0x02000000:
     case 0x02800000:
-        return *(u16*)&MainRAM[addr & MainRAMMask];
+        return *(le_u16*)&MainRAM[addr & MainRAMMask];
 
     case 0x03000000:
         if (SWRAM_ARM7.Mem)
         {
-            return *(u16*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask];
+            return *(le_u16*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask];
         }
         else
         {
-            return *(u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
+            return *(le_u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
         }
 
     case 0x03800000:
-        return *(u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
+        return *(le_u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
 
     case 0x04000000:
         return NDS::ARM7IORead16(addr);
@@ -2492,27 +2506,27 @@ u32 NDS::ARM7Read32(u32 addr)
         if (addr < ARM7BIOSProt && ARM7.R[15] >= ARM7BIOSProt)
             return 0xFFFFFFFF;
 
-        return *(u32*)&ARM7BIOS[addr];
+        return *(le_u32*)&ARM7BIOS[addr];
     }
 
     switch (addr & 0xFF800000)
     {
     case 0x02000000:
     case 0x02800000:
-        return *(u32*)&MainRAM[addr & MainRAMMask];
+        return *(le_u32*)&MainRAM[addr & MainRAMMask];
 
     case 0x03000000:
         if (SWRAM_ARM7.Mem)
         {
-            return *(u32*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask];
+            return *(le_u32*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask];
         }
         else
         {
-            return *(u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
+            return *(le_u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
         }
 
     case 0x03800000:
-        return *(u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
+        return *(le_u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)];
 
     case 0x04000000:
         return NDS::ARM7IORead32(addr);
@@ -2616,26 +2630,26 @@ void NDS::ARM7Write16(u32 addr, u16 val)
     case 0x02000000:
     case 0x02800000:
         JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u16*)&MainRAM[addr & MainRAMMask] = val;
+        *(le_u16*)&MainRAM[addr & MainRAMMask] = val;
         return;
 
     case 0x03000000:
         if (SWRAM_ARM7.Mem)
         {
             JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_SharedWRAM>(addr);
-            *(u16*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask] = val;
+            *(le_u16*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask] = val;
             return;
         }
         else
         {
             JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_WRAM7>(addr);
-            *(u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
+            *(le_u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
             return;
         }
 
     case 0x03800000:
         JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_WRAM7>(addr);
-        *(u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
+        *(le_u16*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
         return;
 
     case 0x04000000:
@@ -2686,26 +2700,26 @@ void NDS::ARM7Write32(u32 addr, u32 val)
     case 0x02000000:
     case 0x02800000:
         JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u32*)&MainRAM[addr & MainRAMMask] = val;
+        *(le_u32*)&MainRAM[addr & MainRAMMask] = val;
         return;
 
     case 0x03000000:
         if (SWRAM_ARM7.Mem)
         {
             JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_SharedWRAM>(addr);
-            *(u32*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask] = val;
+            *(le_u32*)&SWRAM_ARM7.Mem[addr & SWRAM_ARM7.Mask] = val;
             return;
         }
         else
         {
             JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_WRAM7>(addr);
-            *(u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
+            *(le_u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
             return;
         }
 
     case 0x03800000:
         JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_WRAM7>(addr);
-        *(u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
+        *(le_u32*)&ARM7WRAM[addr & (ARM7WRAMSize - 1)] = val;
         return;
 
     case 0x04000000:
@@ -2922,14 +2936,14 @@ u16 NDS::ARM9IORead16(u32 addr)
     case 0x040000DC: return DMAs[3].Cnt & 0xFFFF;
     case 0x040000DE: return DMAs[3].Cnt >> 16;
 
-    case 0x040000E0: return ((u16*)DMA9Fill)[0];
-    case 0x040000E2: return ((u16*)DMA9Fill)[1];
-    case 0x040000E4: return ((u16*)DMA9Fill)[2];
-    case 0x040000E6: return ((u16*)DMA9Fill)[3];
-    case 0x040000E8: return ((u16*)DMA9Fill)[4];
-    case 0x040000EA: return ((u16*)DMA9Fill)[5];
-    case 0x040000EC: return ((u16*)DMA9Fill)[6];
-    case 0x040000EE: return ((u16*)DMA9Fill)[7];
+    case 0x040000E0: return (u16)DMA9Fill[0];
+    case 0x040000E2: return (u16)(DMA9Fill[0] >> 16);
+    case 0x040000E4: return (u16)DMA9Fill[1];
+    case 0x040000E6: return (u16)(DMA9Fill[1] >> 16);
+    case 0x040000E8: return (u16)DMA9Fill[2];
+    case 0x040000EA: return (u16)(DMA9Fill[2] >> 16);
+    case 0x040000EC: return (u16)DMA9Fill[3];
+    case 0x040000EE: return (u16)(DMA9Fill[3] >> 16);
 
     case 0x04000100: return TimerGetCounter(0);
     case 0x04000102: return Timers[0].Cnt;

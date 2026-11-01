@@ -140,7 +140,7 @@ u32 CartCommon::ROMRead32()
     }
     else
     {
-        ret = *(u32*)&ROM[addrhi | addrlo];
+        ret = *(le_u32*)&ROM[addrhi | addrlo];
         addrlo = (addrlo + 4) & 0xFFF;
     }
 
@@ -166,7 +166,7 @@ void CartCommon::ROMCommandStart(NDSCartSlot& cartslot, const u8* cmd)
 
         case 0x3C:
             CmdEncMode = 1;
-            cartslot.Key1_InitKeycode(false, *(u32*)&ROM[0xC], 2, 2);
+            cartslot.Key1_InitKeycode(false, *(le_u32*)&ROM[0xC], 2, 2);
             DSiMode = false;
             return;
 
@@ -174,7 +174,7 @@ void CartCommon::ROMCommandStart(NDSCartSlot& cartslot, const u8* cmd)
             if (IsDSi)
             {
                 CmdEncMode = 1;
-                cartslot.Key1_InitKeycode(true, *(u32*)&ROM[0xC], 1, 2);
+                cartslot.Key1_InitKeycode(true, *(le_u32*)&ROM[0xC], 1, 2);
                 DSiMode = true;
             }
             return;
@@ -189,12 +189,12 @@ void CartCommon::ROMCommandStart(NDSCartSlot& cartslot, const u8* cmd)
         // (KEY2 commands do not need decrypted because KEY2 is handled entirely by hardware,
         // but KEY1 is not, so DS software is responsible for encrypting KEY1 commands)
         u8 cmddec[8];
-        *(u32*)&cmddec[0] = ByteSwap(*(u32*)&cmd[4]);
-        *(u32*)&cmddec[4] = ByteSwap(*(u32*)&cmd[0]);
-        cartslot.Key1_Decrypt((u32*)cmddec);
-        u32 tmp = ByteSwap(*(u32*)&cmddec[4]);
-        *(u32*)&cmddec[4] = ByteSwap(*(u32*)&cmddec[0]);
-        *(u32*)&cmddec[0] = tmp;
+        *(le_u32*)&cmddec[0] = ByteSwap(*(le_u32*)&cmd[4]);
+        *(le_u32*)&cmddec[4] = ByteSwap(*(le_u32*)&cmd[0]);
+        cartslot.Key1_Decrypt(cmddec);
+        u32 tmp = ByteSwap(*(le_u32*)&cmddec[4]);
+        *(le_u32*)&cmddec[4] = ByteSwap(*(le_u32*)&cmddec[0]);
+        *(le_u32*)&cmddec[0] = tmp;
 
         memcpy(ROMCmd, cmddec, 8);
 

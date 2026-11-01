@@ -38,9 +38,9 @@ const u8 WifiAP::APMac[6] = {0x00, 0xF0, 0x77, 0x77, 0x77, 0x77};
 const u8 WifiAP::APChannel = 6;
 
 #define PWRITE_8(p, v)      *p++ = v;
-#define PWRITE_16(p, v)     *(u16*)p = v; p += 2;
-#define PWRITE_32(p, v)     *(u32*)p = v; p += 4;
-#define PWRITE_64(p, v)     *(u64*)p = v; p += 8;
+#define PWRITE_16(p, v)     *(le_u16*)p = v; p += 2;
+#define PWRITE_32(p, v)     *(le_u32*)p = v; p += 4;
+#define PWRITE_64(p, v)     *(le_u64*)p = v; p += 8;
 
 #define PWRITE_MAC(p, a,b,c,d,e,f) \
     *p++ = a; *p++ = b; *p++ = c; *p++ = d; *p++ = e; *p++ = f;
@@ -121,7 +121,7 @@ int WifiAP::HandleManagementFrame(const u8* data, int len)
         return 0;
     }
 
-    u16 framectl = *(u16*)&data[0];
+    u16 framectl = *(le_u16*)&data[0];
 
     u8* base = &PacketBuffer[0];
     u8* p = base;
@@ -266,7 +266,7 @@ int WifiAP::SendPacket(const u8* data, int len)
 
     data += 12;
 
-    u16 framectl = *(u16*)&data[0];
+    u16 framectl = *(le_u16*)&data[0];
     switch ((framectl >> 2) & 0x3)
     {
     case 0: // management
@@ -286,7 +286,7 @@ int WifiAP::SendPacket(const u8* data, int len)
 
             // TODO: WFC patch??
 
-            if (*(u32*)&data[24] == 0x0003AAAA && *(u16*)&data[28] == 0x0000)
+            if (*(le_u32*)&data[24] == 0x0003AAAA && *(le_u16*)&data[28] == 0x0000)
             {
                 if (ClientStatus != 2)
                 {
@@ -298,7 +298,7 @@ int WifiAP::SendPacket(const u8* data, int len)
 
                 memcpy(&LANBuffer[0], &data[16], 6); // destination MAC
                 memcpy(&LANBuffer[6], &data[10], 6); // source MAC
-                *(u16*)&LANBuffer[12] = *(u16*)&data[30]; // type
+                *(le_u16*)&LANBuffer[12] = *(le_u16*)&data[30]; // type
                 memcpy(&LANBuffer[14], &data[32], lan_len - 14);
 
                 Platform::Net_SendPacket(LANBuffer, lan_len, UserData);
@@ -401,7 +401,7 @@ int WifiAP::RecvPacket(u8* data)
 
         PWRITE_32(p, 0x0003AAAA);
         PWRITE_16(p, 0x0000);
-        PWRITE_16(p, *(u16*)&LANBuffer[12]);
+        PWRITE_16(p, *(le_u16*)&LANBuffer[12]);
         memcpy(p, &LANBuffer[14], rxlen-14); p += rxlen-14;
 
         PALIGN_4(p, base);

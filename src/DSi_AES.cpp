@@ -81,26 +81,26 @@ void DSi_AES::Reset()
     u64 consoleid = DSi.GetConsoleID();
 
     // slot 0: modcrypt
-    *(u32*)&KeyX[0][0] = 0x746E694E;
-    *(u32*)&KeyX[0][4] = 0x6F646E65;
+    *(le_u32*)&KeyX[0][0] = 0x746E694E;
+    *(le_u32*)&KeyX[0][4] = 0x6F646E65;
 
     // slot 1: 'Tad'/dev.kp
-    *(u32*)&KeyX[1][0] = 0x4E00004A;
-    *(u32*)&KeyX[1][4] = 0x4A00004E;
-    *(u32*)&KeyX[1][8] = (u32)(consoleid >> 32) ^ 0xC80C4B72;
-    *(u32*)&KeyX[1][12] = (u32)consoleid;
+    *(le_u32*)&KeyX[1][0] = 0x4E00004A;
+    *(le_u32*)&KeyX[1][4] = 0x4A00004E;
+    *(le_u32*)&KeyX[1][8] = (u32)(consoleid >> 32) ^ 0xC80C4B72;
+    *(le_u32*)&KeyX[1][12] = (u32)consoleid;
 
     // slot 2: For 'Tad'
     std::memcpy(KeyX[2], &DSi.ARM9iBIOS[0x8B8C], 0x10);
 
     // slot 3: console-unique eMMC crypto
-    *(u32*)&KeyX[3][0] = (u32)consoleid;
-    *(u32*)&KeyX[3][4] = (u32)consoleid ^ 0x24EE6906;
-    *(u32*)&KeyX[3][8] = (u32)(consoleid >> 32) ^ 0xE65B601D;
-    *(u32*)&KeyX[3][12] = (u32)(consoleid >> 32);
-    *(u32*)&KeyY[3][0] = 0x0AB9DC76;
-    *(u32*)&KeyY[3][4] = 0xBD4DC4D3;
-    *(u32*)&KeyY[3][8] = 0x202DDD1D;
+    *(le_u32*)&KeyX[3][0] = (u32)consoleid;
+    *(le_u32*)&KeyX[3][4] = (u32)consoleid ^ 0x24EE6906;
+    *(le_u32*)&KeyX[3][8] = (u32)(consoleid >> 32) ^ 0xE65B601D;
+    *(le_u32*)&KeyX[3][12] = (u32)(consoleid >> 32);
+    *(le_u32*)&KeyY[3][0] = 0x0AB9DC76;
+    *(le_u32*)&KeyY[3][4] = 0xBD4DC4D3;
+    *(le_u32*)&KeyY[3][8] = 0x202DDD1D;
 }
 
 void DSi_AES::DoSavestate(Savestate* file)
@@ -146,10 +146,10 @@ void DSi_AES::ProcessBlock_CCM_Extra()
     u8 data[16];
     u8 data_rev[16];
 
-    *(u32*)&data[0] = InputFIFO.Read();
-    *(u32*)&data[4] = InputFIFO.Read();
-    *(u32*)&data[8] = InputFIFO.Read();
-    *(u32*)&data[12] = InputFIFO.Read();
+    *(le_u32*)&data[0] = InputFIFO.Read();
+    *(le_u32*)&data[4] = InputFIFO.Read();
+    *(le_u32*)&data[8] = InputFIFO.Read();
+    *(le_u32*)&data[12] = InputFIFO.Read();
 
     Bswap128(data_rev, data);
 
@@ -162,10 +162,10 @@ void DSi_AES::ProcessBlock_CCM_Decrypt()
     u8 data[16];
     u8 data_rev[16];
 
-    *(u32*)&data[0] = InputFIFO.Read();
-    *(u32*)&data[4] = InputFIFO.Read();
-    *(u32*)&data[8] = InputFIFO.Read();
-    *(u32*)&data[12] = InputFIFO.Read();
+    *(le_u32*)&data[0] = InputFIFO.Read();
+    *(le_u32*)&data[4] = InputFIFO.Read();
+    *(le_u32*)&data[8] = InputFIFO.Read();
+    *(le_u32*)&data[12] = InputFIFO.Read();
 
     //printf("AES-CCM: "); _printhex2(data, 16);
 
@@ -179,10 +179,10 @@ void DSi_AES::ProcessBlock_CCM_Decrypt()
 
     //printf(" -> "); _printhex2(data, 16);
 
-    OutputFIFO.Write(*(u32*)&data[0]);
-    OutputFIFO.Write(*(u32*)&data[4]);
-    OutputFIFO.Write(*(u32*)&data[8]);
-    OutputFIFO.Write(*(u32*)&data[12]);
+    OutputFIFO.Write(*(le_u32*)&data[0]);
+    OutputFIFO.Write(*(le_u32*)&data[4]);
+    OutputFIFO.Write(*(le_u32*)&data[8]);
+    OutputFIFO.Write(*(le_u32*)&data[12]);
 }
 
 void DSi_AES::ProcessBlock_CCM_Encrypt()
@@ -190,10 +190,10 @@ void DSi_AES::ProcessBlock_CCM_Encrypt()
     u8 data[16];
     u8 data_rev[16];
 
-    *(u32*)&data[0] = InputFIFO.Read();
-    *(u32*)&data[4] = InputFIFO.Read();
-    *(u32*)&data[8] = InputFIFO.Read();
-    *(u32*)&data[12] = InputFIFO.Read();
+    *(le_u32*)&data[0] = InputFIFO.Read();
+    *(le_u32*)&data[4] = InputFIFO.Read();
+    *(le_u32*)&data[8] = InputFIFO.Read();
+    *(le_u32*)&data[12] = InputFIFO.Read();
 
     //printf("AES-CCM: "); _printhex2(data, 16);
 
@@ -207,10 +207,10 @@ void DSi_AES::ProcessBlock_CCM_Encrypt()
 
     //printf(" -> "); _printhex2(data, 16);
 
-    OutputFIFO.Write(*(u32*)&data[0]);
-    OutputFIFO.Write(*(u32*)&data[4]);
-    OutputFIFO.Write(*(u32*)&data[8]);
-    OutputFIFO.Write(*(u32*)&data[12]);
+    OutputFIFO.Write(*(le_u32*)&data[0]);
+    OutputFIFO.Write(*(le_u32*)&data[4]);
+    OutputFIFO.Write(*(le_u32*)&data[8]);
+    OutputFIFO.Write(*(le_u32*)&data[12]);
 }
 
 void DSi_AES::ProcessBlock_CTR()
@@ -218,10 +218,10 @@ void DSi_AES::ProcessBlock_CTR()
     u8 data[16];
     u8 data_rev[16];
 
-    *(u32*)&data[0] = InputFIFO.Read();
-    *(u32*)&data[4] = InputFIFO.Read();
-    *(u32*)&data[8] = InputFIFO.Read();
-    *(u32*)&data[12] = InputFIFO.Read();
+    *(le_u32*)&data[0] = InputFIFO.Read();
+    *(le_u32*)&data[4] = InputFIFO.Read();
+    *(le_u32*)&data[8] = InputFIFO.Read();
+    *(le_u32*)&data[12] = InputFIFO.Read();
 
     //printf("AES-CTR: "); _printhex2(data, 16);
 
@@ -231,10 +231,10 @@ void DSi_AES::ProcessBlock_CTR()
 
     //printf(" -> "); _printhex(data, 16);
 
-    OutputFIFO.Write(*(u32*)&data[0]);
-    OutputFIFO.Write(*(u32*)&data[4]);
-    OutputFIFO.Write(*(u32*)&data[8]);
-    OutputFIFO.Write(*(u32*)&data[12]);
+    OutputFIFO.Write(*(le_u32*)&data[0]);
+    OutputFIFO.Write(*(le_u32*)&data[4]);
+    OutputFIFO.Write(*(le_u32*)&data[8]);
+    OutputFIFO.Write(*(le_u32*)&data[12]);
 }
 
 
@@ -356,10 +356,10 @@ u32 DSi_AES::ReadOutputFIFO()
 
         if (OutputMACDue && OutputFIFO.Level() <= 12)
         {
-            OutputFIFO.Write(*(u32*)&OutputMAC[0]);
-            OutputFIFO.Write(*(u32*)&OutputMAC[4]);
-            OutputFIFO.Write(*(u32*)&OutputMAC[8]);
-            OutputFIFO.Write(*(u32*)&OutputMAC[12]);
+            OutputFIFO.Write(*(le_u32*)&OutputMAC[0]);
+            OutputFIFO.Write(*(le_u32*)&OutputMAC[4]);
+            OutputFIFO.Write(*(le_u32*)&OutputMAC[8]);
+            OutputFIFO.Write(*(le_u32*)&OutputMAC[12]);
             OutputMACDue = false;
         }
     }
@@ -460,10 +460,10 @@ void DSi_AES::Update()
 
             if (OutputFIFO.Level() <= 12)
             {
-                OutputFIFO.Write(*(u32*)&OutputMAC[0]);
-                OutputFIFO.Write(*(u32*)&OutputMAC[4]);
-                OutputFIFO.Write(*(u32*)&OutputMAC[8]);
-                OutputFIFO.Write(*(u32*)&OutputMAC[12]);
+                OutputFIFO.Write(*(le_u32*)&OutputMAC[0]);
+                OutputFIFO.Write(*(le_u32*)&OutputMAC[4]);
+                OutputFIFO.Write(*(le_u32*)&OutputMAC[8]);
+                OutputFIFO.Write(*(le_u32*)&OutputMAC[12]);
             }
             else
                 OutputMACDue = true;
@@ -492,18 +492,18 @@ void DSi_AES::Update()
 
 void DSi_AES::WriteIV(u32 offset, u32 val, u32 mask)
 {
-    u32 old = *(u32*)&IV[offset];
+    u32 old = *(le_u32*)&IV[offset];
 
-    *(u32*)&IV[offset] = (old & ~mask) | (val & mask);
+    *(le_u32*)&IV[offset] = (old & ~mask) | (val & mask);
 
     //printf("AES: IV: "); _printhex(IV, 16);
 }
 
 void DSi_AES::WriteMAC(u32 offset, u32 val, u32 mask)
 {
-    u32 old = *(u32*)&MAC[offset];
+    u32 old = *(le_u32*)&MAC[offset];
 
-    *(u32*)&MAC[offset] = (old & ~mask) | (val & mask);
+    *(le_u32*)&MAC[offset] = (old & ~mask) | (val & mask);
 
     //printf("AES: MAC: "); _printhex(MAC, 16);
 }
@@ -548,27 +548,27 @@ void DSi_AES::DeriveNormalKey(u8* keyX, u8* keyY, u8* normalkey)
 
 void DSi_AES::WriteKeyNormal(u32 slot, u32 offset, u32 val, u32 mask)
 {
-    u32 old = *(u32*)&KeyNormal[slot][offset];
+    u32 old = *(le_u32*)&KeyNormal[slot][offset];
 
-    *(u32*)&KeyNormal[slot][offset] = (old & ~mask) | (val & mask);
+    *(le_u32*)&KeyNormal[slot][offset] = (old & ~mask) | (val & mask);
 
     //printf("KeyNormal(%d): ", slot); _printhex(KeyNormal[slot], 16);
 }
 
 void DSi_AES::WriteKeyX(u32 slot, u32 offset, u32 val, u32 mask)
 {
-    u32 old = *(u32*)&KeyX[slot][offset];
+    u32 old = *(le_u32*)&KeyX[slot][offset];
 
-    *(u32*)&KeyX[slot][offset] = (old & ~mask) | (val & mask);
+    *(le_u32*)&KeyX[slot][offset] = (old & ~mask) | (val & mask);
 
     //printf("KeyX(%d): ", slot); _printhex(KeyX[slot], 16);
 }
 
 void DSi_AES::WriteKeyY(u32 slot, u32 offset, u32 val, u32 mask)
 {
-    u32 old = *(u32*)&KeyY[slot][offset];
+    u32 old = *(le_u32*)&KeyY[slot][offset];
 
-    *(u32*)&KeyY[slot][offset] = (old & ~mask) | (val & mask);
+    *(le_u32*)&KeyY[slot][offset] = (old & ~mask) | (val & mask);
 
     //printf("[%08X] KeyY(%d): ", NDS::GetPC(1), slot); _printhex(KeyY[slot], 16);
 

@@ -99,6 +99,22 @@ void NDSCartSlot::Key1_Decrypt(u32* data) const noexcept
     data[1] = y ^ Key1_KeyBuf[0x0];
 }
 
+void NDSCartSlot::Key1_Encrypt(u8* data) const noexcept
+{
+    u32 block[2] = {Endian::Load32(data), Endian::Load32(data + 4)};
+    Key1_Encrypt(block);
+    Endian::Store32(data, block[0]);
+    Endian::Store32(data + 4, block[1]);
+}
+
+void NDSCartSlot::Key1_Decrypt(u8* data) const noexcept
+{
+    u32 block[2] = {Endian::Load32(data), Endian::Load32(data + 4)};
+    Key1_Decrypt(block);
+    Endian::Store32(data, block[0]);
+    Endian::Store32(data + 4, block[1]);
+}
+
 void NDSCartSlot::Key1_ApplyKeycode(u32* keycode, u32 mod) noexcept
 {
     Key1_Encrypt(&keycode[1]);
@@ -342,23 +358,23 @@ void NDSCartSlot::DecryptSecureArea(u8* out) noexcept
     memcpy(out, &cartrom[arm9base], 0x800);
 
     Key1_InitKeycode(false, gamecode, 2, 2);
-    Key1_Decrypt((u32*)&out[0]);
+    Key1_Decrypt(&out[0]);
 
     Key1_InitKeycode(false, gamecode, 3, 2);
     for (u32 i = 0; i < 0x800; i += 8)
-        Key1_Decrypt((u32*)&out[i]);
+        Key1_Decrypt(&out[i]);
 
     if (!strncmp((const char*)out, "encryObj", 8))
     {
         Log(LogLevel::Info, "Secure area decryption OK\n");
-        *(u32*)&out[0] = 0xE7FFDEFF;
-        *(u32*)&out[4] = 0xE7FFDEFF;
+        *(le_u32*)&out[0] = 0xE7FFDEFF;
+        *(le_u32*)&out[4] = 0xE7FFDEFF;
     }
     else
     {
         Log(LogLevel::Warn, "Secure area decryption failed\n");
         for (u32 i = 0; i < 0x800; i += 4)
-            *(u32*)&out[i] = 0xE7FFDEFF;
+            *(le_u32*)&out[i] = 0xE7FFDEFF;
     }
 }
 
@@ -530,7 +546,7 @@ void NDSCartSlot::SetCart(std::unique_ptr<CartCommon>&& cart) noexcept
     if (header.ARM9ROMOffset >= 0x4000 && header.ARM9ROMOffset < 0x8000)
     {
         // reencrypt secure area if needed
-        if (*(u32*)&cartrom[header.ARM9ROMOffset] == 0xE7FFDEFF && *(u32*)&cartrom[header.ARM9ROMOffset + 0x10] != 0xE7FFDEFF)
+        if (*(le_u32*)&cartrom[header.ARM9ROMOffset] == 0xE7FFDEFF && *(le_u32*)&cartrom[header.ARM9ROMOffset + 0x10] != 0xE7FFDEFF)
         {
             Log(LogLevel::Debug, "Re-encrypting cart secure area\n");
 
@@ -538,10 +554,10 @@ void NDSCartSlot::SetCart(std::unique_ptr<CartCommon>&& cart) noexcept
 
             Key1_InitKeycode(false, romparams.GameCode, 3, 2);
             for (u32 i = 0; i < 0x800; i += 8)
-                Key1_Encrypt((u32*)&cartrom[header.ARM9ROMOffset + i]);
+                Key1_Encrypt((u8*)&cartrom[header.ARM9ROMOffset + i]);
 
             Key1_InitKeycode(false, romparams.GameCode, 2, 2);
-            Key1_Encrypt((u32*)&cartrom[header.ARM9ROMOffset]);
+            Key1_Encrypt((u8*)&cartrom[header.ARM9ROMOffset]);
 
             Log(LogLevel::Debug, "Re-encrypted cart secure area\n");
         }

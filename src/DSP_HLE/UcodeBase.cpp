@@ -262,14 +262,14 @@ u16 UcodeBase::DataReadA32(u32 addr) const
 {
     addr <<= 1;
     u8* ptr = DSi.NWRAMMap_C[2][(addr >> 15) & 0x7];
-    return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+    return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
 }
 
 void UcodeBase::DataWriteA32(u32 addr, u16 val)
 {
     addr <<= 1;
     u8* ptr = DSi.NWRAMMap_C[2][(addr >> 15) & 0x7];
-    if (ptr) *(u16*)&ptr[addr & 0x7FFF] = val;
+    if (ptr) *(le_u16*)&ptr[addr & 0x7FFF] = val;
 }
 
 u16 UcodeBase::MMIORead(u16 addr)
@@ -285,14 +285,14 @@ u16 UcodeBase::ProgramRead(u32 addr) const
 {
     addr <<= 1;
     u8* ptr = DSi.NWRAMMap_B[2][(addr >> 15) & 0x7];
-    return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+    return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
 }
 
 void UcodeBase::ProgramWrite(u32 addr, u16 val)
 {
     addr <<= 1;
     u8* ptr = DSi.NWRAMMap_B[2][(addr >> 15) & 0x7];
-    if (ptr) *(u16*)&ptr[addr & 0x7FFF] = val;
+    if (ptr) *(le_u16*)&ptr[addr & 0x7FFF] = val;
 }
 
 u16 UcodeBase::AHBMRead16(u32 addr)
@@ -470,7 +470,7 @@ void UcodeBase::ReadARM9Mem(u16* mem, u32 addr, u32 len)
     }
     while (len >= 4)
     {
-        *(u32*)mem = DSi.ARM9Read32(addr);
+        *(le_u32*)mem = DSi.ARM9Read32(addr);
         mem += 2;
         addr += 4;
         len -= 4;
@@ -493,7 +493,7 @@ void UcodeBase::WriteARM9Mem(const u16* mem, u32 addr, u32 len)
     }
     while (len >= 4)
     {
-        DSi.ARM9Write32(addr, *(u32*)mem);
+        DSi.ARM9Write32(addr, *(le_u32*)mem);
         mem += 2;
         addr += 4;
         len -= 4;

@@ -333,12 +333,12 @@ u16 DSi_DSP::DSPRead16(u32 addr)
     if (!(addr & 0x40000))
     {
         u8* ptr = DSi.NWRAMMap_B[2][(addr >> 15) & 0x7];
-        return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+        return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
     }
     else
     {
         u8* ptr = DSi.NWRAMMap_C[2][(addr >> 15) & 0x7];
-        return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+        return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
     }
 }
 
@@ -349,12 +349,12 @@ void DSi_DSP::DSPWrite16(u32 addr, u16 val)
     if (!(addr & 0x40000))
     {
         u8* ptr = DSi.NWRAMMap_B[2][(addr >> 15) & 0x7];
-        if (ptr) *(u16*)&ptr[addr & 0x7FFF] = val;
+        if (ptr) *(le_u16*)&ptr[addr & 0x7FFF] = val;
     }
     else
     {
         u8* ptr = DSi.NWRAMMap_C[2][(addr >> 15) & 0x7];
-        if (ptr) *(u16*)&ptr[addr & 0x7FFF] = val;
+        if (ptr) *(le_u16*)&ptr[addr & 0x7FFF] = val;
     }
 }
 

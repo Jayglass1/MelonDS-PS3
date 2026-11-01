@@ -43,4 +43,8 @@ using array2d = std::array<std::array<T, B>, A>;
 typedef ptrdiff_t ssize_t;
 #endif
 }
+
+// le_u16/le_u32/... for little-endian memory access on any host
+#include "Endian.h"
+
 #endif // TYPES_H

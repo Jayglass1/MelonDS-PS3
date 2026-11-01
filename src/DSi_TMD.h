@@ -108,7 +108,7 @@ struct TitleMetadata
 
     [[nodiscard]] u32 GetIDNoByteswap() const noexcept
     {
-        return *reinterpret_cast<const u32*>(&TitleId[4]);
+        return *reinterpret_cast<const le_u32*>(&TitleId[4]);
     }
 };
 

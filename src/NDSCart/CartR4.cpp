@@ -212,7 +212,7 @@ u32 CartR4::ROMCommandReceive()
             /* TODO: When does the R4 do this exactly? */
             if (!BufferInitialized)
             {
-                return *(u32*)&ROM[ROMAddr & (ROMLength-1)];
+                return *(le_u32*)&ROM[ROMAddr & (ROMLength-1)];
             }
             /* Otherwise, fall through. */
         }
@@ -220,14 +220,14 @@ u32 CartR4::ROMCommandReceive()
     case 0xBA: /* SD read data */
         {
             // TODO: Do these use separate buffers?
-            u32 ret = *(u32*)&Buffer[BufferPos];
+            u32 ret = *(le_u32*)&Buffer[BufferPos];
             BufferPos += 4;
             BufferPos &= 0x1FF;
             return ret;
         }
     case 0xBF: /* ROM read decrypted data */
         {
-            u32 ret = *(u32*)&SectorBuffer[SectorPos];
+            u32 ret = *(le_u32*)&SectorBuffer[SectorPos];
             SectorPos += 4;
             SectorPos &= 0x1FF;
             return ret;
@@ -248,7 +248,7 @@ void CartR4::ROMCommandTransmit(u32 val)
     case 0xBD: /* Save write start */
         if (SectorPos < 512)
         {
-            *(u32*)&SectorBuffer[SectorPos] = val;
+            *(le_u32*)&SectorBuffer[SectorPos] = val;
             SectorPos += 4;
         }
         return;

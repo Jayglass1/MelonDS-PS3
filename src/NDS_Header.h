@@ -56,127 +56,127 @@ struct NDSHeader
     u8 ROMVersion;
     u8 Autostart;
 
-    u32 ARM9ROMOffset;
-    u32 ARM9EntryAddress;
-    u32 ARM9RAMAddress;
-    u32 ARM9Size;
+    le_u32 ARM9ROMOffset;
+    le_u32 ARM9EntryAddress;
+    le_u32 ARM9RAMAddress;
+    le_u32 ARM9Size;
 
-    u32 ARM7ROMOffset;
-    u32 ARM7EntryAddress;
-    u32 ARM7RAMAddress;
-    u32 ARM7Size;
+    le_u32 ARM7ROMOffset;
+    le_u32 ARM7EntryAddress;
+    le_u32 ARM7RAMAddress;
+    le_u32 ARM7Size;
 
-    u32 FNTOffset;
-    u32 FNTSize;
-    u32 FATOffset;
-    u32 FATSize;
+    le_u32 FNTOffset;
+    le_u32 FNTSize;
+    le_u32 FATOffset;
+    le_u32 FATSize;
 
-    u32 ARM9OverlayOffset;
-    u32 ARM9OverlaySize;
-    u32 ARM7OverlayOffset;
-    u32 ARM7OverlaySize;
+    le_u32 ARM9OverlayOffset;
+    le_u32 ARM9OverlaySize;
+    le_u32 ARM7OverlayOffset;
+    le_u32 ARM7OverlaySize;
 
-    u32 NormalCommandSettings;
-    u32 Key1CommandSettings;
+    le_u32 NormalCommandSettings;
+    le_u32 Key1CommandSettings;
 
-    u32 BannerOffset;
+    le_u32 BannerOffset;
 
-    u16 SecureAreaCRC16;
-    u16 SecureAreaDelay;
-
-    // GBATEK lists the following two with a question mark
-    u32 ARM9AutoLoadListAddress;
-    u32 ARM7AutoLoadListAddress;
-
-    u64 SecureAreaDisable;
-
-    u32 ROMSize; // excluding DSi area
-    u32 HeaderSize;
+    le_u16 SecureAreaCRC16;
+    le_u16 SecureAreaDelay;
 
     // GBATEK lists the following two with a question mark
-    u32 DSiARM9ParamTableOffset;
-    u32 DSiARM7ParamTableOffset;
+    le_u32 ARM9AutoLoadListAddress;
+    le_u32 ARM7AutoLoadListAddress;
+
+    le_u64 SecureAreaDisable;
+
+    le_u32 ROMSize; // excluding DSi area
+    le_u32 HeaderSize;
+
+    // GBATEK lists the following two with a question mark
+    le_u32 DSiARM9ParamTableOffset;
+    le_u32 DSiARM7ParamTableOffset;
 
     // expressed in 0x80000-byte units
-    u16 NDSRegionEnd;
-    u16 DSiRegionStart;
+    le_u16 NDSRegionEnd;
+    le_u16 DSiRegionStart;
 
     // specific to NAND games
-    u16 NANDROMEnd;
-    u16 NANDRWStart;
+    le_u16 NANDROMEnd;
+    le_u16 NANDRWStart;
 
     u8 Reserved2[40];
 
     u8 NintendoLogo[156];
-    u16 NintendoLogoCRC16;
-    u16 HeaderCRC16;
+    le_u16 NintendoLogoCRC16;
+    le_u16 HeaderCRC16;
 
-    u32 DebugROMOffset;
-    u32 DebugSize;
-    u32 DebugRAMAddress;
+    le_u32 DebugROMOffset;
+    le_u32 DebugSize;
+    le_u32 DebugRAMAddress;
 
-    u32 Reserved4;
+    le_u32 Reserved4;
     u8 Reserved5[16];
 
-    u32 DSiMBKSlots[5]; // global MBK1..MBK5 settings
-    u32 DSiARM9MBKAreas[3]; // local MBK6..MBK8 settings for ARM9
-    u32 DSiARM7MBKAreas[3]; // local MBK6..MBK8 settings for ARM7
+    le_u32 DSiMBKSlots[5]; // global MBK1..MBK5 settings
+    le_u32 DSiARM9MBKAreas[3]; // local MBK6..MBK8 settings for ARM9
+    le_u32 DSiARM7MBKAreas[3]; // local MBK6..MBK8 settings for ARM7
     u8 DSiMBKWriteProtect[3]; // global MBK9 setting
     u8 DSiWRAMCntSetting; // global WRAMCNT setting
 
     RegionMask DSiRegionMask;
-    u32 DSiPermissions[2];
+    le_u32 DSiPermissions[2];
     u8 Reserved6[3];
     u8 AppFlags; // flags at 1BF
 
-    u32 DSiARM9iROMOffset;
-    u32 Reserved7;
-    u32 DSiARM9iRAMAddress;
-    u32 DSiARM9iSize;
+    le_u32 DSiARM9iROMOffset;
+    le_u32 Reserved7;
+    le_u32 DSiARM9iRAMAddress;
+    le_u32 DSiARM9iSize;
 
-    u32 DSiARM7iROMOffset;
-    u32 DSiSDMMCDeviceList;
-    u32 DSiARM7iRAMAddress;
-    u32 DSiARM7iSize;
+    le_u32 DSiARM7iROMOffset;
+    le_u32 DSiSDMMCDeviceList;
+    le_u32 DSiARM7iRAMAddress;
+    le_u32 DSiARM7iSize;
 
-    u32 DSiDigestNTROffset;
-    u32 DSiDigestNTRSize;
-    u32 DSiDigestTWLOffset;
-    u32 DSiDigestTWLSize;
-    u32 DSiDigestSecHashtblOffset;
-    u32 DSiDigestSecHashtblSize;
-    u32 DSiDigestBlkHashtblOffset;
-    u32 DSiDigestBlkHashtblSize;
-    u32 DSiDigestSecSize; // sector size in bytes
-    u32 DSiDigestBlkSecCount; // sectors per block
+    le_u32 DSiDigestNTROffset;
+    le_u32 DSiDigestNTRSize;
+    le_u32 DSiDigestTWLOffset;
+    le_u32 DSiDigestTWLSize;
+    le_u32 DSiDigestSecHashtblOffset;
+    le_u32 DSiDigestSecHashtblSize;
+    le_u32 DSiDigestBlkHashtblOffset;
+    le_u32 DSiDigestBlkHashtblSize;
+    le_u32 DSiDigestSecSize; // sector size in bytes
+    le_u32 DSiDigestBlkSecCount; // sectors per block
 
-    u32 DSiBannerSize;
+    le_u32 DSiBannerSize;
 
     // ???
     u8 DSiShared0Size;
     u8 DSiShared1Size;
     u8 DSiEULARatings;
     u8 DSiUseRatings;
-    u32 DSiTotalROMSize;
+    le_u32 DSiTotalROMSize;
     u8 DSiShared2Size;
     u8 DSiShared3Size;
     u8 DSiShared4Size;
     u8 DSiShared5Size;
 
     // ???
-    u32 DSiARM9iParamTableOffset;
-    u32 DSiARM7iParamTableOffset;
+    le_u32 DSiARM9iParamTableOffset;
+    le_u32 DSiARM7iParamTableOffset;
 
-    u32 DSiModcrypt1Offset;
-    u32 DSiModcrypt1Size;
-    u32 DSiModcrypt2Offset;
-    u32 DSiModcrypt2Size;
+    le_u32 DSiModcrypt1Offset;
+    le_u32 DSiModcrypt1Size;
+    le_u32 DSiModcrypt2Offset;
+    le_u32 DSiModcrypt2Size;
 
-    u32 DSiTitleIDLow;
-    u32 DSiTitleIDHigh;
+    le_u32 DSiTitleIDLow;
+    le_u32 DSiTitleIDHigh;
 
-    u32 DSiPublicSavSize;
-    u32 DSiPrivateSavSize;
+    le_u32 DSiPublicSavSize;
+    le_u32 DSiPrivateSavSize;
 
     u8 Reserved8[176];
 
@@ -223,11 +223,11 @@ static_assert(sizeof(NDSHeader) == 4096, "NDSHeader is not 4096 bytes!");
 
 struct NDSBanner
 {
-    u16 Version;
-    u16 CRC16[4];
+    le_u16 Version;
+    le_u16 CRC16[4];
     u8 Reserved1[22];
     u8 Icon[512];
-    u16 Palette[16];
+    le_u16 Palette[16];
 
     char16_t JapaneseTitle[128];
     char16_t EnglishTitle[128];
@@ -241,8 +241,8 @@ struct NDSBanner
     u8 Reserved2[2048];
 
     u8 DSiIcon[8][512];
-    u16 DSiPalette[8][16];
-    u16 DSiSequence[64];
+    le_u16 DSiPalette[8][16];
+    le_u16 DSiSequence[64];
 };
 
 static_assert(sizeof(NDSBanner) == 9152, "NDSBanner is not 9152 bytes!");

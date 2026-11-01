@@ -60,11 +60,11 @@ void CartSD::ApplyDLDIPatchAt(u8* binary, u32 dldioffset, const u8* patch, u32 p
     Log(LogLevel::Info, "existing driver is: %s\n", &binary[dldioffset+0x10]);
     Log(LogLevel::Info, "new driver is: %s\n", &patch[0x10]);
 
-    u32 memaddr = *(u32*)&binary[dldioffset+0x40];
+    u32 memaddr = *(le_u32*)&binary[dldioffset+0x40];
     if (memaddr == 0)
-        memaddr = *(u32*)&binary[dldioffset+0x68] - 0x80;
+        memaddr = *(le_u32*)&binary[dldioffset+0x68] - 0x80;
 
-    u32 patchbase = *(u32*)&patch[0x40];
+    u32 patchbase = *(le_u32*)&patch[0x40];
     u32 delta = memaddr - patchbase;
 
     u32 patchsize = 1 << patch[0x0D];
@@ -72,64 +72,64 @@ void CartSD::ApplyDLDIPatchAt(u8* binary, u32 dldioffset, const u8* patch, u32 p
 
     memcpy(&binary[dldioffset], patch, patchlen);
 
-    *(u32*)&binary[dldioffset+0x40] += delta;
-    *(u32*)&binary[dldioffset+0x44] += delta;
-    *(u32*)&binary[dldioffset+0x48] += delta;
-    *(u32*)&binary[dldioffset+0x4C] += delta;
-    *(u32*)&binary[dldioffset+0x50] += delta;
-    *(u32*)&binary[dldioffset+0x54] += delta;
-    *(u32*)&binary[dldioffset+0x58] += delta;
-    *(u32*)&binary[dldioffset+0x5C] += delta;
+    *(le_u32*)&binary[dldioffset+0x40] += delta;
+    *(le_u32*)&binary[dldioffset+0x44] += delta;
+    *(le_u32*)&binary[dldioffset+0x48] += delta;
+    *(le_u32*)&binary[dldioffset+0x4C] += delta;
+    *(le_u32*)&binary[dldioffset+0x50] += delta;
+    *(le_u32*)&binary[dldioffset+0x54] += delta;
+    *(le_u32*)&binary[dldioffset+0x58] += delta;
+    *(le_u32*)&binary[dldioffset+0x5C] += delta;
 
-    *(u32*)&binary[dldioffset+0x68] += delta;
-    *(u32*)&binary[dldioffset+0x6C] += delta;
-    *(u32*)&binary[dldioffset+0x70] += delta;
-    *(u32*)&binary[dldioffset+0x74] += delta;
-    *(u32*)&binary[dldioffset+0x78] += delta;
-    *(u32*)&binary[dldioffset+0x7C] += delta;
+    *(le_u32*)&binary[dldioffset+0x68] += delta;
+    *(le_u32*)&binary[dldioffset+0x6C] += delta;
+    *(le_u32*)&binary[dldioffset+0x70] += delta;
+    *(le_u32*)&binary[dldioffset+0x74] += delta;
+    *(le_u32*)&binary[dldioffset+0x78] += delta;
+    *(le_u32*)&binary[dldioffset+0x7C] += delta;
 
     u8 fixmask = patch[0x0E];
 
     if (fixmask & 0x01)
     {
-        u32 fixstart = *(u32*)&patch[0x40] - patchbase;
-        u32 fixend = *(u32*)&patch[0x44] - patchbase;
+        u32 fixstart = *(le_u32*)&patch[0x40] - patchbase;
+        u32 fixend = *(le_u32*)&patch[0x44] - patchbase;
 
         for (u32 addr = fixstart; addr < fixend; addr+=4)
         {
-            u32 val = *(u32*)&binary[dldioffset+addr];
+            u32 val = *(le_u32*)&binary[dldioffset+addr];
             if (val >= patchbase && val < patchend)
-                *(u32*)&binary[dldioffset+addr] += delta;
+                *(le_u32*)&binary[dldioffset+addr] += delta;
         }
     }
     if (fixmask & 0x02)
     {
-        u32 fixstart = *(u32*)&patch[0x48] - patchbase;
-        u32 fixend = *(u32*)&patch[0x4C] - patchbase;
+        u32 fixstart = *(le_u32*)&patch[0x48] - patchbase;
+        u32 fixend = *(le_u32*)&patch[0x4C] - patchbase;
 
         for (u32 addr = fixstart; addr < fixend; addr+=4)
         {
-            u32 val = *(u32*)&binary[dldioffset+addr];
+            u32 val = *(le_u32*)&binary[dldioffset+addr];
             if (val >= patchbase && val < patchend)
-                *(u32*)&binary[dldioffset+addr] += delta;
+                *(le_u32*)&binary[dldioffset+addr] += delta;
         }
     }
     if (fixmask & 0x04)
     {
-        u32 fixstart = *(u32*)&patch[0x50] - patchbase;
-        u32 fixend = *(u32*)&patch[0x54] - patchbase;
+        u32 fixstart = *(le_u32*)&patch[0x50] - patchbase;
+        u32 fixend = *(le_u32*)&patch[0x54] - patchbase;
 
         for (u32 addr = fixstart; addr < fixend; addr+=4)
         {
-            u32 val = *(u32*)&binary[dldioffset+addr];
+            u32 val = *(le_u32*)&binary[dldioffset+addr];
             if (val >= patchbase && val < patchend)
-                *(u32*)&binary[dldioffset+addr] += delta;
+                *(le_u32*)&binary[dldioffset+addr] += delta;
         }
     }
     if (fixmask & 0x08)
     {
-        u32 fixstart = *(u32*)&patch[0x58] - patchbase;
-        u32 fixend = *(u32*)&patch[0x5C] - patchbase;
+        u32 fixstart = *(le_u32*)&patch[0x58] - patchbase;
+        u32 fixend = *(le_u32*)&patch[0x5C] - patchbase;
 
         memset(&binary[dldioffset+fixstart], 0, fixend-fixstart);
     }
@@ -140,11 +140,11 @@ void CartSD::ApplyDLDIPatchAt(u8* binary, u32 dldioffset, const u8* patch, u32 p
         binary[dldioffset+0x64] &= ~0x02;
 
         // make writeSectors() return failure
-        u32 writesec_addr = *(u32*)&binary[dldioffset+0x74];
+        u32 writesec_addr = *(le_u32*)&binary[dldioffset+0x74];
         writesec_addr -= memaddr;
         writesec_addr += dldioffset;
-        *(u32*)&binary[writesec_addr+0x00] = 0xE3A00000; // mov r0, #0
-        *(u32*)&binary[writesec_addr+0x04] = 0xE12FFF1E; // bx lr
+        *(le_u32*)&binary[writesec_addr+0x00] = 0xE3A00000; // mov r0, #0
+        *(le_u32*)&binary[writesec_addr+0x04] = 0xE12FFF1E; // bx lr
     }
 
     Log(LogLevel::Debug, "applied DLDI patch at %08X\n", dldioffset);
@@ -152,24 +152,24 @@ void CartSD::ApplyDLDIPatchAt(u8* binary, u32 dldioffset, const u8* patch, u32 p
 
 void CartSD::ApplyDLDIPatch(const u8* patch, u32 patchlen, bool readonly)
 {
-    if (*(u32*)&patch[0] != 0xBF8DA5ED ||
-        *(u32*)&patch[4] != 0x69684320 ||
-        *(u32*)&patch[8] != 0x006D6873)
+    if (*(le_u32*)&patch[0] != 0xBF8DA5ED ||
+        *(le_u32*)&patch[4] != 0x69684320 ||
+        *(le_u32*)&patch[8] != 0x006D6873)
     {
         Log(LogLevel::Error, "bad DLDI patch\n");
         return;
     }
 
-    u32 offset = *(u32*)&ROM[0x20];
-    u32 size = *(u32*)&ROM[0x2C];
+    u32 offset = *(le_u32*)&ROM[0x20];
+    u32 size = *(le_u32*)&ROM[0x2C];
 
     u8* binary = &ROM[offset];
 
     for (u32 i = 0; i < size; )
     {
-        if (*(u32*)&binary[i  ] == 0xBF8DA5ED &&
-            *(u32*)&binary[i+4] == 0x69684320 &&
-            *(u32*)&binary[i+8] == 0x006D6873)
+        if (*(le_u32*)&binary[i  ] == 0xBF8DA5ED &&
+            *(le_u32*)&binary[i+4] == 0x69684320 &&
+            *(le_u32*)&binary[i+8] == 0x006D6873)
         {
             Log(LogLevel::Debug, "DLDI structure found at %08X (%08X)\n", i, offset+i);
             ApplyDLDIPatchAt(binary, i, patch, patchlen, readonly);

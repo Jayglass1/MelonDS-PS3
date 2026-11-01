@@ -187,7 +187,7 @@ void SoftRenderer::DrawScanlineA(u32 line, u32* dst)
             u32 vrambank = (dispcnt >> 18) & 0x3;
             if (GPU.VRAMMap_LCDC & (1<<vrambank))
             {
-                u16* vram = (u16*)GPU.VRAM[vrambank];
+                le_u16* vram = (le_u16*)GPU.VRAM[vrambank];
                 vram = &vram[line * 256];
 
                 for (int i = 0; i < 256; i++)
@@ -273,7 +273,7 @@ void SoftRenderer::DoCapture(u32 line)
     if (!(GPU.VRAMMap_LCDC & (1<<dstvram)))
         return;
 
-    u16* dst = (u16*)GPU.VRAM[dstvram];
+    le_u16* dst = (le_u16*)GPU.VRAM[dstvram];
     u32 dstaddr = (((captureCnt >> 18) & 0x3) << 14) + (line * width);
     dst += (dstaddr & 0xFFFF);
 
@@ -283,7 +283,7 @@ void SoftRenderer::DoCapture(u32 line)
     else
         srcA = Output2D[0];
 
-    u16* srcB = nullptr;
+    le_u16* srcB = nullptr;
     if (captureCnt & (1<<25))
         srcB = GPU.DispFIFOBuffer;
     else
@@ -292,7 +292,7 @@ void SoftRenderer::DoCapture(u32 line)
         u32 srcvram = (dispcnt >> 18) & 0x3;
         if (GPU.VRAMMap_LCDC & (1<<srcvram))
         {
-            srcB = (u16*)GPU.VRAM[srcvram];
+            srcB = (le_u16*)GPU.VRAM[srcvram];
 
             u32 offset = line * 256;
             if (((dispcnt >> 16) & 0x3) != 2)

@@ -246,7 +246,7 @@ u16 CartGame::ROMRead(u32 addr) const
 
     // CHECKME: does ROM mirror?
     if (addr < ROMLength)
-        return *(u16*)&ROM[addr];
+        return *(le_u16*)&ROM[addr];
 
     return 0;
 }
@@ -708,7 +708,7 @@ u16 CartRAMExpansion::ROMRead(u32 addr) const
     {
         if (!RAMEnable) return 0xFFFF;
 
-        return *(u16*)&RAM[addr & 0x7FFFFF];
+        return *(le_u16*)&RAM[addr & 0x7FFFFF];
     }
 
     return 0xFFFF;
@@ -731,7 +731,7 @@ void CartRAMExpansion::ROMWrite(u32 addr, u16 val)
     {
         if (!RAMEnable) return;
 
-        *(u16*)&RAM[addr & 0x7FFFFF] = val;
+        *(le_u16*)&RAM[addr & 0x7FFFFF] = val;
     }
 }
 

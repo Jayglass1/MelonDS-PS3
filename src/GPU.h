@@ -213,7 +213,7 @@ public:
         default: return 0;
         }
 
-        if (VRAMMap_LCDC & (1<<bank)) return *(T*)&VRAM[bank][addr];
+        if (VRAMMap_LCDC & (1<<bank)) return *(le_t<T>*)&VRAM[bank][addr];
 
         return 0;
     }
@@ -280,7 +280,7 @@ public:
 
         if (VRAMMap_LCDC & (1<<bank))
         {
-            *(T*)&VRAM[bank][addr] = val;
+            *(le_t<T>*)&VRAM[bank][addr] = val;
             VRAMDirty[bank][addr / VRAMDirtyGranularity] = true;
         }
     }
@@ -290,18 +290,18 @@ public:
     T ReadVRAM_ABG(u32 addr) const noexcept
     {
         u8* ptr = VRAMPtr_ABG[(addr >> 14) & 0x1F];
-        if (ptr) return *(T*)&ptr[addr & 0x3FFF];
+        if (ptr) return *(le_t<T>*)&ptr[addr & 0x3FFF];
 
         T ret = 0;
         u32 mask = VRAMMap_ABG[(addr >> 14) & 0x1F];
 
-        if (mask & (1<<0)) ret |= *(T*)&VRAM_A[addr & 0x1FFFF];
-        if (mask & (1<<1)) ret |= *(T*)&VRAM_B[addr & 0x1FFFF];
-        if (mask & (1<<2)) ret |= *(T*)&VRAM_C[addr & 0x1FFFF];
-        if (mask & (1<<3)) ret |= *(T*)&VRAM_D[addr & 0x1FFFF];
-        if (mask & (1<<4)) ret |= *(T*)&VRAM_E[addr & 0xFFFF];
-        if (mask & (1<<5)) ret |= *(T*)&VRAM_F[addr & 0x3FFF];
-        if (mask & (1<<6)) ret |= *(T*)&VRAM_G[addr & 0x3FFF];
+        if (mask & (1<<0)) ret |= *(le_t<T>*)&VRAM_A[addr & 0x1FFFF];
+        if (mask & (1<<1)) ret |= *(le_t<T>*)&VRAM_B[addr & 0x1FFFF];
+        if (mask & (1<<2)) ret |= *(le_t<T>*)&VRAM_C[addr & 0x1FFFF];
+        if (mask & (1<<3)) ret |= *(le_t<T>*)&VRAM_D[addr & 0x1FFFF];
+        if (mask & (1<<4)) ret |= *(le_t<T>*)&VRAM_E[addr & 0xFFFF];
+        if (mask & (1<<5)) ret |= *(le_t<T>*)&VRAM_F[addr & 0x3FFF];
+        if (mask & (1<<6)) ret |= *(le_t<T>*)&VRAM_G[addr & 0x3FFF];
 
         return ret;
     }
@@ -314,37 +314,37 @@ public:
         if (mask & (1<<0))
         {
             VRAMDirty[0][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_A[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_A[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<1))
         {
             VRAMDirty[1][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_B[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_B[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<2))
         {
             VRAMDirty[2][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_C[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_C[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<3))
         {
             VRAMDirty[3][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_D[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_D[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<4))
         {
             VRAMDirty[4][(addr & 0xFFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_E[addr & 0xFFFF] = val;
+            *(le_t<T>*)&VRAM_E[addr & 0xFFFF] = val;
         }
         if (mask & (1<<5))
         {
             VRAMDirty[5][(addr & 0x3FFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_F[addr & 0x3FFF] = val;
+            *(le_t<T>*)&VRAM_F[addr & 0x3FFF] = val;
         }
         if (mask & (1<<6))
         {
             VRAMDirty[6][(addr & 0x3FFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_G[addr & 0x3FFF] = val;
+            *(le_t<T>*)&VRAM_G[addr & 0x3FFF] = val;
         }
     }
 
@@ -353,16 +353,16 @@ public:
     T ReadVRAM_AOBJ(u32 addr) const noexcept
     {
         u8* ptr = VRAMPtr_AOBJ[(addr >> 14) & 0xF];
-        if (ptr) return *(T*)&ptr[addr & 0x3FFF];
+        if (ptr) return *(le_t<T>*)&ptr[addr & 0x3FFF];
 
         T ret = 0;
         u32 mask = VRAMMap_AOBJ[(addr >> 14) & 0xF];
 
-        if (mask & (1<<0)) ret |= *(T*)&VRAM_A[addr & 0x1FFFF];
-        if (mask & (1<<1)) ret |= *(T*)&VRAM_B[addr & 0x1FFFF];
-        if (mask & (1<<4)) ret |= *(T*)&VRAM_E[addr & 0xFFFF];
-        if (mask & (1<<5)) ret |= *(T*)&VRAM_F[addr & 0x3FFF];
-        if (mask & (1<<6)) ret |= *(T*)&VRAM_G[addr & 0x3FFF];
+        if (mask & (1<<0)) ret |= *(le_t<T>*)&VRAM_A[addr & 0x1FFFF];
+        if (mask & (1<<1)) ret |= *(le_t<T>*)&VRAM_B[addr & 0x1FFFF];
+        if (mask & (1<<4)) ret |= *(le_t<T>*)&VRAM_E[addr & 0xFFFF];
+        if (mask & (1<<5)) ret |= *(le_t<T>*)&VRAM_F[addr & 0x3FFF];
+        if (mask & (1<<6)) ret |= *(le_t<T>*)&VRAM_G[addr & 0x3FFF];
 
         return ret;
     }
@@ -375,27 +375,27 @@ public:
         if (mask & (1<<0))
         {
             VRAMDirty[0][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_A[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_A[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<1))
         {
             VRAMDirty[1][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_B[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_B[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<4))
         {
             VRAMDirty[4][(addr & 0xFFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_E[addr & 0xFFFF] = val;
+            *(le_t<T>*)&VRAM_E[addr & 0xFFFF] = val;
         }
         if (mask & (1<<5))
         {
             VRAMDirty[5][(addr & 0x3FFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_F[addr & 0x3FFF] = val;
+            *(le_t<T>*)&VRAM_F[addr & 0x3FFF] = val;
         }
         if (mask & (1<<6))
         {
             VRAMDirty[6][(addr & 0x3FFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_G[addr & 0x3FFF] = val;
+            *(le_t<T>*)&VRAM_G[addr & 0x3FFF] = val;
         }
     }
 
@@ -404,14 +404,14 @@ public:
     T ReadVRAM_BBG(u32 addr) const noexcept
     {
         u8* ptr = VRAMPtr_BBG[(addr >> 14) & 0x7];
-        if (ptr) return *(T*)&ptr[addr & 0x3FFF];
+        if (ptr) return *(le_t<T>*)&ptr[addr & 0x3FFF];
 
         T ret = 0;
         u32 mask = VRAMMap_BBG[(addr >> 14) & 0x7];
 
-        if (mask & (1<<2)) ret |= *(T*)&VRAM_C[addr & 0x1FFFF];
-        if (mask & (1<<7)) ret |= *(T*)&VRAM_H[addr & 0x7FFF];
-        if (mask & (1<<8)) ret |= *(T*)&VRAM_I[addr & 0x3FFF];
+        if (mask & (1<<2)) ret |= *(le_t<T>*)&VRAM_C[addr & 0x1FFFF];
+        if (mask & (1<<7)) ret |= *(le_t<T>*)&VRAM_H[addr & 0x7FFF];
+        if (mask & (1<<8)) ret |= *(le_t<T>*)&VRAM_I[addr & 0x3FFF];
 
         return ret;
     }
@@ -424,17 +424,17 @@ public:
         if (mask & (1<<2))
         {
             VRAMDirty[2][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_C[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_C[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<7))
         {
             VRAMDirty[7][(addr & 0x7FFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_H[addr & 0x7FFF] = val;
+            *(le_t<T>*)&VRAM_H[addr & 0x7FFF] = val;
         }
         if (mask & (1<<8))
         {
             VRAMDirty[8][(addr & 0x3FFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_I[addr & 0x3FFF] = val;
+            *(le_t<T>*)&VRAM_I[addr & 0x3FFF] = val;
         }
     }
 
@@ -443,13 +443,13 @@ public:
     T ReadVRAM_BOBJ(u32 addr) const noexcept
     {
         u8* ptr = VRAMPtr_BOBJ[(addr >> 14) & 0x7];
-        if (ptr) return *(T*)&ptr[addr & 0x3FFF];
+        if (ptr) return *(le_t<T>*)&ptr[addr & 0x3FFF];
 
         T ret = 0;
         u32 mask = VRAMMap_BOBJ[(addr >> 14) & 0x7];
 
-        if (mask & (1<<3)) ret |= *(T*)&VRAM_D[addr & 0x1FFFF];
-        if (mask & (1<<8)) ret |= *(T*)&VRAM_I[addr & 0x3FFF];
+        if (mask & (1<<3)) ret |= *(le_t<T>*)&VRAM_D[addr & 0x1FFFF];
+        if (mask & (1<<8)) ret |= *(le_t<T>*)&VRAM_I[addr & 0x3FFF];
 
         return ret;
     }
@@ -462,12 +462,12 @@ public:
         if (mask & (1<<3))
         {
             VRAMDirty[3][(addr & 0x1FFFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_D[addr & 0x1FFFF] = val;
+            *(le_t<T>*)&VRAM_D[addr & 0x1FFFF] = val;
         }
         if (mask & (1<<8))
         {
             VRAMDirty[8][(addr & 0x3FFF) / VRAMDirtyGranularity] = true;
-            *(T*)&VRAM_I[addr & 0x3FFF] = val;
+            *(le_t<T>*)&VRAM_I[addr & 0x3FFF] = val;
         }
     }
 
@@ -477,8 +477,8 @@ public:
         T ret = 0;
         u32 mask = VRAMMap_ARM7[(addr >> 17) & 0x1];
 
-        if (mask & (1<<2)) ret |= *(T*)&VRAM_C[addr & 0x1FFFF];
-        if (mask & (1<<3)) ret |= *(T*)&VRAM_D[addr & 0x1FFFF];
+        if (mask & (1<<2)) ret |= *(le_t<T>*)&VRAM_C[addr & 0x1FFFF];
+        if (mask & (1<<3)) ret |= *(le_t<T>*)&VRAM_D[addr & 0x1FFFF];
 
         return ret;
     }
@@ -488,8 +488,8 @@ public:
     {
         u32 mask = VRAMMap_ARM7[(addr >> 17) & 0x1];
 
-        if (mask & (1<<2)) *(T*)&VRAM_C[addr & 0x1FFFF] = val;
-        if (mask & (1<<3)) *(T*)&VRAM_D[addr & 0x1FFFF] = val;
+        if (mask & (1<<2)) *(le_t<T>*)&VRAM_C[addr & 0x1FFFF] = val;
+        if (mask & (1<<3)) *(le_t<T>*)&VRAM_D[addr & 0x1FFFF] = val;
     }
 
 
@@ -518,10 +518,10 @@ public:
         T ret = 0;
         u32 mask = VRAMMap_Texture[(addr >> 17) & 0x3];
 
-        if (mask & (1<<0)) ret |= *(T*)&VRAM_A[addr & 0x1FFFF];
-        if (mask & (1<<1)) ret |= *(T*)&VRAM_B[addr & 0x1FFFF];
-        if (mask & (1<<2)) ret |= *(T*)&VRAM_C[addr & 0x1FFFF];
-        if (mask & (1<<3)) ret |= *(T*)&VRAM_D[addr & 0x1FFFF];
+        if (mask & (1<<0)) ret |= *(le_t<T>*)&VRAM_A[addr & 0x1FFFF];
+        if (mask & (1<<1)) ret |= *(le_t<T>*)&VRAM_B[addr & 0x1FFFF];
+        if (mask & (1<<2)) ret |= *(le_t<T>*)&VRAM_C[addr & 0x1FFFF];
+        if (mask & (1<<3)) ret |= *(le_t<T>*)&VRAM_D[addr & 0x1FFFF];
 
         return ret;
     }
@@ -532,9 +532,9 @@ public:
         T ret = 0;
         u32 mask = VRAMMap_TexPal[(addr >> 14) & 0x7];
 
-        if (mask & (1<<4)) ret |= *(T*)&VRAM_E[addr & 0xFFFF];
-        if (mask & (1<<5)) ret |= *(T*)&VRAM_F[addr & 0x3FFF];
-        if (mask & (1<<6)) ret |= *(T*)&VRAM_G[addr & 0x3FFF];
+        if (mask & (1<<4)) ret |= *(le_t<T>*)&VRAM_E[addr & 0xFFFF];
+        if (mask & (1<<5)) ret |= *(le_t<T>*)&VRAM_F[addr & 0x3FFF];
+        if (mask & (1<<6)) ret |= *(le_t<T>*)&VRAM_G[addr & 0x3FFF];
 
         return ret;
     }
@@ -542,7 +542,7 @@ public:
     template<typename T>
     T ReadPalette(u32 addr) const noexcept
     {
-        return *(T*)&Palette[addr & 0x7FF];
+        return *(le_t<T>*)&Palette[addr & 0x7FF];
     }
 
     template<typename T>
@@ -550,7 +550,7 @@ public:
     {
         addr &= 0x7FF;
 
-        *(T*)&Palette[addr] = val;
+        *(le_t<T>*)&Palette[addr] = val;
         if (addr & 0x3FE)
             PaletteDirty |= 1 << (addr / VRAMDirtyGranularity);
         else
@@ -560,7 +560,7 @@ public:
     template<typename T>
     T ReadOAM(u32 addr) const noexcept
     {
-        return *(T*)&OAM[addr & 0x7FF];
+        return *(le_t<T>*)&OAM[addr & 0x7FF];
     }
 
     template<typename T>
@@ -568,19 +568,19 @@ public:
     {
         addr &= 0x7FF;
 
-        *(T*)&OAM[addr] = val;
+        *(le_t<T>*)&OAM[addr] = val;
         OAMDirty |= 1 << (addr / 1024);
     }
 
     template <typename T>
     inline T ReadVRAMFlat_Texture(u32 addr) const
     {
-        return *(T*)&VRAMFlat_Texture[addr & 0x7FFFF];
+        return *(le_t<T>*)&VRAMFlat_Texture[addr & 0x7FFFF];
     }
     template <typename T>
     inline T ReadVRAMFlat_TexPal(u32 addr) const
     {
-        return *(T*)&VRAMFlat_TexPal[addr & 0x1FFFF];
+        return *(le_t<T>*)&VRAMFlat_TexPal[addr & 0x1FFFF];
     }
 
     void SetPowerCnt(u32 val) noexcept;
@@ -630,7 +630,8 @@ public:
     u16 DispFIFO[16];
     u8 DispFIFOReadPtr;
     u8 DispFIFOWritePtr;
-    alignas(8) u16 DispFIFOBuffer[256];
+    // little-endian so it can be used interchangeably with VRAM in display capture
+    alignas(8) le_u16 DispFIFOBuffer[256];
 
     u32 CaptureCnt;
     bool CaptureEnable;
@@ -713,9 +714,9 @@ private:
         u32 mask = VRAMMap_ABGExtPal[(addr >> 13) & 0x3];
 
         T ret = 0;
-        if (mask & (1<<4)) ret |= *(T*)&VRAM_E[addr & 0x7FFF];
-        if (mask & (1<<5)) ret |= *(T*)&VRAM_F[addr & 0x3FFF];
-        if (mask & (1<<6)) ret |= *(T*)&VRAM_G[addr & 0x3FFF];
+        if (mask & (1<<4)) ret |= *(le_t<T>*)&VRAM_E[addr & 0x7FFF];
+        if (mask & (1<<5)) ret |= *(le_t<T>*)&VRAM_F[addr & 0x3FFF];
+        if (mask & (1<<6)) ret |= *(le_t<T>*)&VRAM_G[addr & 0x3FFF];
 
         return ret;
     }
@@ -726,7 +727,7 @@ private:
         u32 mask = VRAMMap_BBGExtPal[(addr >> 13) & 0x3];
 
         T ret = 0;
-        if (mask & (1<<7)) ret |= *(T*)&VRAM_H[addr & 0x7FFF];
+        if (mask & (1<<7)) ret |= *(le_t<T>*)&VRAM_H[addr & 0x7FFF];
 
         return ret;
     }
@@ -737,8 +738,8 @@ private:
         u32 mask = VRAMMap_AOBJExtPal;
 
         T ret = 0;
-        if (mask & (1<<4)) ret |= *(T*)&VRAM_F[addr & 0x1FFF];
-        if (mask & (1<<5)) ret |= *(T*)&VRAM_G[addr & 0x1FFF];
+        if (mask & (1<<4)) ret |= *(le_t<T>*)&VRAM_F[addr & 0x1FFF];
+        if (mask & (1<<5)) ret |= *(le_t<T>*)&VRAM_G[addr & 0x1FFF];
 
         return ret;
     }
@@ -749,7 +750,7 @@ private:
         u32 mask = VRAMMap_BOBJExtPal;
 
         T ret = 0;
-        if (mask & (1<<8)) ret |= *(T*)&VRAM_I[addr & 0x1FFF];
+        if (mask & (1<<8)) ret |= *(le_t<T>*)&VRAM_I[addr & 0x1FFF];
 
         return ret;
     }
@@ -774,7 +775,7 @@ private:
             else
             {
                 for (u32 i = 0; i < VRAMDirtyGranularity; i += 8)
-                    *(u64*)&dst[i] = (this->*slowAccess)(offset + i);
+                    *(le_u64*)&dst[i] = (this->*slowAccess)(offset + i);
             }
             change = true;
             it++;

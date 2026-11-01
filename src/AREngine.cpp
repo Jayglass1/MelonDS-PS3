@@ -373,7 +373,7 @@ void AREngine::RunCheat(const ARCode& arcode)
                     code += 2;
                     if (bytesleft >= 4)
                     {
-                        NDS.ARM7Write32(dstaddr, *(u32*)leftover); dstaddr += 4;
+                        NDS.ARM7Write32(dstaddr, *(le_u32*)leftover); dstaddr += 4;
                         leftover += 4;
                         bytesleft -= 4;
                     }

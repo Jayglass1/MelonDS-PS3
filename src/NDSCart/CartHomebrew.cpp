@@ -76,7 +76,7 @@ void CartHomebrew::SetupDirectBoot(const std::string& romname, NDS& nds)
         argvbase = (argvbase + 0xF) & ~0xF;
 
         for (u32 i = 0; i <= argvlen; i+=4)
-            nds.ARM9Write32(argvbase+i, *(u32*)&argv[i]);
+            nds.ARM9Write32(argvbase+i, *(le_u32*)&argv[i]);
 
         nds.ARM9Write32(0x02FFFE70, 0x5F617267);
         nds.ARM9Write32(0x02FFFE74, argvbase);
@@ -119,7 +119,7 @@ u32 CartHomebrew::ROMCommandReceive()
     {
     case 0xC0:
         {
-            u32 ret = *(u32*)&SectorBuffer[SectorPos];
+            u32 ret = *(le_u32*)&SectorBuffer[SectorPos];
             SectorPos += 4;
             if (SectorPos >= 512)
             {
@@ -143,7 +143,7 @@ void CartHomebrew::ROMCommandTransmit(u32 val)
     switch (ROMCmd[0])
     {
     case 0xC1:
-        *(u32*)&SectorBuffer[SectorPos] = val;
+        *(le_u32*)&SectorBuffer[SectorPos] = val;
         SectorPos += 4;
         if (SectorPos >= 512)
         {

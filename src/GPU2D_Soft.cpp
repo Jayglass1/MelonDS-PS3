@@ -307,9 +307,9 @@ void SoftRenderer2D::DrawScanline_BGOBJ(u32 line, u32* dst)
 {
     u64 backdrop;
     if (GPU2D.Num)
-        backdrop = *(u16*)&GPU.Palette[0x400];
+        backdrop = *(le_u16*)&GPU.Palette[0x400];
     else
-        backdrop = *(u16*)&GPU.Palette[0];
+        backdrop = *(le_u16*)&GPU.Palette[0];
 
     {
         u8 r = (backdrop & 0x001F) << 1;
@@ -391,7 +391,7 @@ void SoftRenderer2D::DrawBG_Text(u32 line, u32 bgnum)
     u16 bgcnt = GPU2D.BGCnt[bgnum];
 
     u32 tilesetaddr, tilemapaddr;
-    u16* pal;
+    le_u16* pal;
     u32 extpal, extpalslot;
 
     u16 xoff = GPU2D.BGXPos[bgnum];
@@ -422,14 +422,14 @@ void SoftRenderer2D::DrawBG_Text(u32 line, u32 bgnum)
         tilesetaddr = ((bgcnt & 0x003C) << 12);
         tilemapaddr = ((bgcnt & 0x1F00) << 3);
 
-        pal = (u16*)&GPU.Palette[0x400];
+        pal = (le_u16*)&GPU.Palette[0x400];
     }
     else
     {
         tilesetaddr = ((GPU2D.DispCnt & 0x07000000) >> 8) + ((bgcnt & 0x003C) << 12);
         tilemapaddr = ((GPU2D.DispCnt & 0x38000000) >> 11) + ((bgcnt & 0x1F00) << 3);
 
-        pal = (u16*)&GPU.Palette[0];
+        pal = (le_u16*)&GPU.Palette[0];
     }
 
     // adjust Y position in tilemap
@@ -443,7 +443,7 @@ void SoftRenderer2D::DrawBG_Text(u32 line, u32 bgnum)
         tilemapaddr += ((yoff & 0xF8) << 3);
 
     u16 curtile;
-    u16* curpal;
+    le_u16* curpal;
     u32 pixelsaddr;
     u8 color;
     u32 lastxpos;
@@ -455,7 +455,7 @@ void SoftRenderer2D::DrawBG_Text(u32 line, u32 bgnum)
         // preload shit as needed
         if ((xoff & 0x7) || mosaic)
         {
-            curtile = *(u16*)&bgvram[(tilemapaddr + ((xoff & 0xF8) >> 2) + ((xoff & widexmask) << 3)) & bgvrammask];
+            curtile = *(le_u16*)&bgvram[(tilemapaddr + ((xoff & 0xF8) >> 2) + ((xoff & widexmask) << 3)) & bgvrammask];
 
             if (extpal) curpal = GPU2D.GetBGExtPal(extpalslot, curtile>>12);
             else        curpal = pal;
@@ -476,7 +476,7 @@ void SoftRenderer2D::DrawBG_Text(u32 line, u32 bgnum)
                 (mosaic && ((xpos >> 3) != (lastxpos >> 3))))
             {
                 // load a new tile
-                curtile = *(u16*)&bgvram[(tilemapaddr + ((xpos & 0xF8) >> 2) + ((xpos & widexmask) << 3)) & bgvrammask];
+                curtile = *(le_u16*)&bgvram[(tilemapaddr + ((xpos & 0xF8) >> 2) + ((xpos & widexmask) << 3)) & bgvrammask];
 
                 if (extpal) curpal = GPU2D.GetBGExtPal(extpalslot, curtile>>12);
                 else        curpal = pal;
@@ -507,7 +507,7 @@ void SoftRenderer2D::DrawBG_Text(u32 line, u32 bgnum)
         // preload shit as needed
         if ((xoff & 0x7) || mosaic)
         {
-            curtile = *(u16*)&bgvram[((tilemapaddr + ((xoff & 0xF8) >> 2) + ((xoff & widexmask) << 3))) & bgvrammask];
+            curtile = *(le_u16*)&bgvram[((tilemapaddr + ((xoff & 0xF8) >> 2) + ((xoff & widexmask) << 3))) & bgvrammask];
             curpal = pal + ((curtile & 0xF000) >> 8);
             pixelsaddr = tilesetaddr + ((curtile & 0x03FF) << 5)
                                      + (((curtile & (1<<11)) ? (7-(yoff&0x7)) : (yoff&0x7)) << 2);
@@ -525,7 +525,7 @@ void SoftRenderer2D::DrawBG_Text(u32 line, u32 bgnum)
                 (mosaic && ((xpos >> 3) != (lastxpos >> 3))))
             {
                 // load a new tile
-                curtile = *(u16*)&bgvram[(tilemapaddr + ((xpos & 0xF8) >> 2) + ((xpos & widexmask) << 3)) & bgvrammask];
+                curtile = *(le_u16*)&bgvram[(tilemapaddr + ((xpos & 0xF8) >> 2) + ((xpos & widexmask) << 3)) & bgvrammask];
                 curpal = pal + ((curtile & 0xF000) >> 8);
                 pixelsaddr = tilesetaddr + ((curtile & 0x03FF) << 5)
                                          + (((curtile & (1<<11)) ? (7-(yoff&0x7)) : (yoff&0x7)) << 2);
@@ -561,7 +561,7 @@ void SoftRenderer2D::DrawBG_Affine(u32 line, u32 bgnum)
     u16 bgcnt = GPU2D.BGCnt[bgnum];
 
     u32 tilesetaddr, tilemapaddr;
-    u16* pal;
+    le_u16* pal;
 
     u32 coordmask;
     u32 yshift;
@@ -592,14 +592,14 @@ void SoftRenderer2D::DrawBG_Affine(u32 line, u32 bgnum)
         tilesetaddr = ((bgcnt & 0x003C) << 12);
         tilemapaddr = ((bgcnt & 0x1F00) << 3);
 
-        pal = (u16*)&GPU.Palette[0x400];
+        pal = (le_u16*)&GPU.Palette[0x400];
     }
     else
     {
         tilesetaddr = ((GPU2D.DispCnt & 0x07000000) >> 8) + ((bgcnt & 0x003C) << 12);
         tilemapaddr = ((GPU2D.DispCnt & 0x38000000) >> 11) + ((bgcnt & 0x1F00) << 3);
 
-        pal = (u16*)&GPU.Palette[0];
+        pal = (le_u16*)&GPU.Palette[0];
     }
 
     u16 curtile;
@@ -650,7 +650,7 @@ void SoftRenderer2D::DrawBG_Extended(u32 line, u32 bgnum)
     u16 bgcnt = GPU2D.BGCnt[bgnum];
 
     u32 tilesetaddr, tilemapaddr;
-    u16* pal;
+    le_u16* pal;
     u32 extpal;
 
     u8* bgvram;
@@ -718,7 +718,7 @@ void SoftRenderer2D::DrawBG_Extended(u32 line, u32 bgnum)
 
                     if (!(finalX & ofxmask) && !(finalY & ofymask))
                     {
-                        color = *(u16*)&bgvram[(tilemapaddr + (((((finalY & ymask) >> 8) << yshift) + ((finalX & xmask) >> 8)) << 1)) & bgvrammask];
+                        color = *(le_u16*)&bgvram[(tilemapaddr + (((((finalY & ymask) >> 8) << yshift) + ((finalX & xmask) >> 8)) << 1)) & bgvrammask];
 
                         if (color & 0x8000)
                             DrawPixel(&BGOBJLine[i], color & 0x7FFF, 0x01000000<<bgnum);
@@ -733,8 +733,8 @@ void SoftRenderer2D::DrawBG_Extended(u32 line, u32 bgnum)
         {
             // 256-color bitmap
 
-            if (GPU2D.Num) pal = (u16*)&GPU.Palette[0x400];
-            else           pal = (u16*)&GPU.Palette[0];
+            if (GPU2D.Num) pal = (le_u16*)&GPU.Palette[0x400];
+            else           pal = (le_u16*)&GPU.Palette[0];
 
             u8 color;
 
@@ -792,18 +792,18 @@ void SoftRenderer2D::DrawBG_Extended(u32 line, u32 bgnum)
             tilesetaddr = ((bgcnt & 0x003C) << 12);
             tilemapaddr = ((bgcnt & 0x1F00) << 3);
 
-            pal = (u16*)&GPU.Palette[0x400];
+            pal = (le_u16*)&GPU.Palette[0x400];
         }
         else
         {
             tilesetaddr = ((GPU2D.DispCnt & 0x07000000) >> 8) + ((bgcnt & 0x003C) << 12);
             tilemapaddr = ((GPU2D.DispCnt & 0x38000000) >> 11) + ((bgcnt & 0x1F00) << 3);
 
-            pal = (u16*)&GPU.Palette[0];
+            pal = (le_u16*)&GPU.Palette[0];
         }
 
         u16 curtile;
-        u16* curpal;
+        le_u16* curpal;
         u8 color;
 
         yshift -= 3;
@@ -827,7 +827,7 @@ void SoftRenderer2D::DrawBG_Extended(u32 line, u32 bgnum)
 
                 if ((!((finalX|finalY) & overflowmask)))
                 {
-                    curtile = *(u16*)&bgvram[(tilemapaddr + (((((finalY & coordmask) >> 11) << yshift) + ((finalX & coordmask) >> 11)) << 1)) & bgvrammask];
+                    curtile = *(le_u16*)&bgvram[(tilemapaddr + (((((finalY & coordmask) >> 11) << yshift) + ((finalX & coordmask) >> 11)) << 1)) & bgvrammask];
 
                     if (extpal) curpal = GPU2D.GetBGExtPal(bgnum, curtile>>12);
                     else        curpal = pal;
@@ -857,7 +857,7 @@ void SoftRenderer2D::DrawBG_Large(u32 line) // BG is always BG2
 {
     u16 bgcnt = GPU2D.BGCnt[2];
 
-    u16* pal;
+    le_u16* pal;
 
     // large BG sizes:
     // 0: 512x1024
@@ -898,8 +898,8 @@ void SoftRenderer2D::DrawBG_Large(u32 line) // BG is always BG2
 
     // 256-color bitmap
 
-    if (GPU2D.Num) pal = (u16*)&GPU.Palette[0x400];
-    else           pal = (u16*)&GPU.Palette[0];
+    if (GPU2D.Num) pal = (le_u16*)&GPU.Palette[0x400];
+    else           pal = (le_u16*)&GPU.Palette[0];
 
     u8 color;
 
@@ -984,8 +984,8 @@ void SoftRenderer2D::ApplySpriteMosaicX()
 void SoftRenderer2D::InterleaveSprites(u32 prio)
 {
     u32 attrmask = (prio << 16) | OBJ_IsOpaque;
-    u16* pal = (u16*)&GPU.Palette[GPU2D.Num ? 0x600 : 0x200];
-    u16* extpal = GPU2D.GetOBJExtPal();
+    le_u16* pal = (le_u16*)&GPU.Palette[GPU2D.Num ? 0x600 : 0x200];
+    le_u16* extpal = GPU2D.GetOBJExtPal();
 
     for (u32 i = 0; i < 256; i++)
     {
@@ -1045,7 +1045,7 @@ void SoftRenderer2D::DrawSprites(u32 line)
     if (!GPU2D.OBJEnable)
         return;
 
-    u16* oam = (u16*)&GPU.OAM[GPU2D.Num ? 0x400 : 0];
+    le_u16* oam = (le_u16*)&GPU.OAM[GPU2D.Num ? 0x400 : 0];
 
     const s32 spritewidth[16] =
     {
@@ -1064,7 +1064,7 @@ void SoftRenderer2D::DrawSprites(u32 line)
 
     for (int sprnum = 0; sprnum < 128; sprnum++)
     {
-        u16* attrib = &oam[sprnum*4];
+        le_u16* attrib = &oam[sprnum*4];
 
         u16 sprtype = (attrib[0] >> 8) & 0x3;
         if (sprtype == 2) // disabled
@@ -1144,9 +1144,9 @@ void SoftRenderer2D::DrawSpritePixel(int color, u32 pixelattr, s32 xpos)
 template<bool window>
 void SoftRenderer2D::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheight, u32 width, u32 height, s32 xpos, s32 ypos)
 {
-    u16* oam = (u16*)&GPU.OAM[GPU2D.Num ? 0x400 : 0];
-    u16* attrib = &oam[num * 4];
-    u16* rotparams = &oam[(((attrib[1] >> 9) & 0x1F) * 16) + 3];
+    le_u16* oam = (le_u16*)&GPU.OAM[GPU2D.Num ? 0x400 : 0];
+    le_u16* attrib = &oam[num * 4];
+    le_u16* rotparams = &oam[(((attrib[1] >> 9) & 0x1F) * 16) + 3];
 
     u32 pixelattr = ((attrib[2] & 0x0C00) << 6) | OBJ_IsSprite | OBJ_IsOpaque;
     u32 tilenum = attrib[2] & 0x03FF;
@@ -1235,7 +1235,7 @@ void SoftRenderer2D::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheigh
         {
             if ((u32)rotX < width && (u32)rotY < height)
             {
-                color = *(u16*)&objvram[(pixelsaddr + ((rotY >> 8) * ytilefactor) + ((rotX >> 8) << 1)) & objvrammask];
+                color = *(le_u16*)&objvram[(pixelsaddr + ((rotY >> 8) * ytilefactor) + ((rotX >> 8) << 1)) & objvrammask];
 
                 DrawSpritePixel<window>((color&0x8000) ? color : -1, pixelattr, xpos);
             }
@@ -1326,8 +1326,8 @@ void SoftRenderer2D::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheigh
 template<bool window>
 void SoftRenderer2D::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s32 ypos)
 {
-    u16* oam = (u16*)&GPU.OAM[GPU2D.Num ? 0x400 : 0];
-    u16* attrib = &oam[num * 4];
+    le_u16* oam = (le_u16*)&GPU.OAM[GPU2D.Num ? 0x400 : 0];
+    le_u16* attrib = &oam[num * 4];
 
     u32 pixelattr = ((attrib[2] & 0x0C00) << 6) | OBJ_IsSprite | OBJ_IsOpaque;
     u32 tilenum = attrib[2] & 0x03FF;
@@ -1421,7 +1421,7 @@ void SoftRenderer2D::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos,
 
         for (; xoff < xend;)
         {
-            color = *(u16*)&objvram[pixelsaddr & objvrammask];
+            color = *(le_u16*)&objvram[pixelsaddr & objvrammask];
 
             pixelsaddr += pixelstride;
 

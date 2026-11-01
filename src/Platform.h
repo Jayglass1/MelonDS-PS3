@@ -247,7 +247,12 @@ enum LogLevel
     Error,
 };
 
+#if defined(__GNUC__) || defined(__clang__)
+// lets the compiler check Log's format string against its arguments
+void Log(LogLevel level, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+#else
 void Log(LogLevel level, const char* fmt, ...);
+#endif
 
 struct Thread;
 Thread* Thread_Create(std::function<void()> func);

@@ -381,8 +381,8 @@ void DSi::DecryptModcryptArea(u32 offset, u32 size, const u8* iv)
     {
         u8 keyX[16], keyY[16];
 
-        *(u32*)&keyX[0] = 0x746E694E;
-        *(u32*)&keyX[4] = 0x6F646E65;
+        *(le_u32*)&keyX[0] = 0x746E694E;
+        *(le_u32*)&keyX[4] = 0x6F646E65;
         keyX[8]  = header.GameCode[0];
         keyX[9]  = header.GameCode[1];
         keyX[10] = header.GameCode[2];
@@ -567,7 +567,7 @@ void DSi::SetupDirectBoot()
     {
         for (u32 i = 0; i < 0x170; i+=4)
         {
-            u32 tmp = *(u32*)&cartrom[i];
+            u32 tmp = *(le_u32*)&cartrom[i];
             ARM9Write32(0x027FFE00+i, tmp);
         }
 
@@ -594,14 +594,14 @@ void DSi::SetupDirectBoot()
 
         for (u32 i = 0; i < 0x160; i+=4)
         {
-            u32 tmp = *(u32*)&cartrom[i];
+            u32 tmp = *(le_u32*)&cartrom[i];
             ARM9Write32(0x02FFFA80+i, tmp);
             ARM9Write32(0x02FFFE00+i, tmp);
         }
 
         for (u32 i = 0; i < 0x1000; i+=4)
         {
-            u32 tmp = *(u32*)&cartrom[i];
+            u32 tmp = *(le_u32*)&cartrom[i];
             ARM9Write32(0x02FFC000+i, tmp);
             ARM9Write32(0x02FFE000+i, tmp);
         }
@@ -613,7 +613,7 @@ void DSi::SetupDirectBoot()
                 DSi_NAND::DSiFirmwareSystemSettings userdata {};
                 nand.ReadUserData(userdata);
                 for (u32 i = 0; i < 0x128; i+=4)
-                    ARM9Write32(0x02000400+i, *(u32*)&userdata.Bytes[0x88+i]);
+                    ARM9Write32(0x02000400+i, *(le_u32*)&userdata.Bytes[0x88+i]);
 
                 DSi_NAND::DSiSerialData hwinfoS {};
                 nand.ReadSerialData(hwinfoS);
@@ -621,10 +621,10 @@ void DSi::SetupDirectBoot()
                 nand.ReadHardwareInfoN(hwinfoN);
 
                 for (u32 i = 0; i < 0x14; i+=4)
-                    ARM9Write32(0x02000600+i, *(u32*)&hwinfoN[0x88+i]);
+                    ARM9Write32(0x02000600+i, *(le_u32*)&hwinfoN[0x88+i]);
 
                 for (u32 i = 0; i < 0x18; i+=4)
-                    ARM9Write32(0x02FFFD68+i, *(u32*)&hwinfoS.Bytes[0x88+i]);
+                    ARM9Write32(0x02FFFD68+i, *(le_u32*)&hwinfoS.Bytes[0x88+i]);
             }
         }
 
@@ -668,20 +668,20 @@ void DSi::SetupDirectBoot()
 
         for (u32 i = 0; i < 0x800; i+=4)
         {
-            ARM9Write32(header.ARM9RAMAddress+i, *(u32*)&securearea[i]);
+            ARM9Write32(header.ARM9RAMAddress+i, *(le_u32*)&securearea[i]);
             arm9start += 4;
         }
     }
 
     for (u32 i = arm9start; i < header.ARM9Size; i+=4)
     {
-        u32 tmp = *(u32*)&cartrom[header.ARM9ROMOffset+i];
+        u32 tmp = *(le_u32*)&cartrom[header.ARM9ROMOffset+i];
         ARM9Write32(header.ARM9RAMAddress+i, tmp);
     }
 
     for (u32 i = 0; i < header.ARM7Size; i+=4)
     {
-        u32 tmp = *(u32*)&cartrom[header.ARM7ROMOffset+i];
+        u32 tmp = *(le_u32*)&cartrom[header.ARM7ROMOffset+i];
         ARM7Write32(header.ARM7RAMAddress+i, tmp);
     }
 
@@ -691,13 +691,13 @@ void DSi::SetupDirectBoot()
 
         for (u32 i = 0; i < header.DSiARM9iSize; i+=4)
         {
-            u32 tmp = *(u32*)&cartrom[header.DSiARM9iROMOffset+i];
+            u32 tmp = *(le_u32*)&cartrom[header.DSiARM9iROMOffset+i];
             ARM9Write32(header.DSiARM9iRAMAddress+i, tmp);
         }
 
         for (u32 i = 0; i < header.DSiARM7iSize; i+=4)
         {
-            u32 tmp = *(u32*)&cartrom[header.DSiARM7iROMOffset+i];
+            u32 tmp = *(le_u32*)&cartrom[header.DSiARM7iROMOffset+i];
             ARM7Write32(header.DSiARM7iRAMAddress+i, tmp);
         }
 
@@ -945,10 +945,10 @@ bool DSi::LoadNAND()
         u8 tmp[16];
         u32 dstaddr;
 
-        *(u32*)&tmp[0] = bootparams[3];
-        *(u32*)&tmp[4] = -bootparams[3];
-        *(u32*)&tmp[8] = ~bootparams[3];
-        *(u32*)&tmp[12] = 0;
+        *(le_u32*)&tmp[0] = bootparams[3];
+        *(le_u32*)&tmp[4] = -bootparams[3];
+        *(le_u32*)&tmp[8] = ~bootparams[3];
+        *(le_u32*)&tmp[12] = 0;
         Bswap128(boot2iv, tmp);
 
         AES_init_ctx_iv(&ctx, boot2key, boot2iv);
@@ -970,10 +970,10 @@ bool DSi::LoadNAND()
             ARM9Write32(dstaddr, data[3]); dstaddr += 4;
         }
 
-        *(u32*)&tmp[0] = bootparams[7];
-        *(u32*)&tmp[4] = -bootparams[7];
-        *(u32*)&tmp[8] = ~bootparams[7];
-        *(u32*)&tmp[12] = 0;
+        *(le_u32*)&tmp[0] = bootparams[7];
+        *(le_u32*)&tmp[4] = -bootparams[7];
+        *(le_u32*)&tmp[8] = ~bootparams[7];
+        *(le_u32*)&tmp[12] = 0;
         Bswap128(boot2iv, tmp);
 
         AES_init_ctx_iv(&ctx, boot2key, boot2iv);
@@ -997,7 +997,7 @@ bool DSi::LoadNAND()
     }
 
     const DSi_NAND::DSiKey& emmccid = image->GetEMMCID();
-    Log(LogLevel::Debug, "eMMC CID: %08llX%08llX\n", *(const u64*)&emmccid[0], *(const u64*)&emmccid[8]);
+    Log(LogLevel::Debug, "eMMC CID: %08llX%08llX\n", (u64)*(const le_u64*)&emmccid[0], (u64)*(const le_u64*)&emmccid[8]);
     Log(LogLevel::Debug, "Console ID: %" PRIx64 "\n", image->GetConsoleID());
 
     if (FullBIOSBoot)
@@ -1009,10 +1009,10 @@ bool DSi::LoadNAND()
     else
     {
         u32 eaddr = 0x03FFE6E4;
-        ARM7Write32(eaddr+0x00, *(const u32*)&emmccid[0]);
-        ARM7Write32(eaddr+0x04, *(const u32*)&emmccid[4]);
-        ARM7Write32(eaddr+0x08, *(const u32*)&emmccid[8]);
-        ARM7Write32(eaddr+0x0C, *(const u32*)&emmccid[12]);
+        ARM7Write32(eaddr+0x00, *(const le_u32*)&emmccid[0]);
+        ARM7Write32(eaddr+0x04, *(const le_u32*)&emmccid[4]);
+        ARM7Write32(eaddr+0x08, *(const le_u32*)&emmccid[8]);
+        ARM7Write32(eaddr+0x0C, *(const le_u32*)&emmccid[12]);
         ARM7Write16(eaddr+0x2C, 0x0001);
         ARM7Write16(eaddr+0x2E, 0x0001);
         ARM7Write16(eaddr+0x3C, 0x0100);
@@ -1032,7 +1032,7 @@ bool DSi::LoadNAND()
         memcpy(&ARM7Init[0x129C], &ARM7iBIOS[0xD718], 0x1048);
 
         for (u32 i = 0; i < 0x3C00; i+=4)
-            ARM7Write32(0x03FFC400+i, *(u32*)&ARM7Init[i]);
+            ARM7Write32(0x03FFC400+i, *(le_u32*)&ARM7Init[i]);
 
         // repoint the CPUs to the boot2 binaries
         ARM9.JumpTo(bootparams[2]);
@@ -1559,7 +1559,7 @@ u16 DSi::ARM9Read16(u32 addr)
         if ((addr >= 0xFFFF8000) && (SCFG_BIOS & (1<<0)))
             return 0xFFFF;
 
-        return *(u16*)&ARM9iBIOS[addr & 0xFFFF];
+        return *(le_u16*)&ARM9iBIOS[addr & 0xFFFF];
     }
 
     switch (addr & 0xFF000000)
@@ -1570,17 +1570,17 @@ u16 DSi::ARM9Read16(u32 addr)
             if (addr >= NWRAMStart[0][0] && addr < NWRAMEnd[0][0])
             {
                 u8* ptr = NWRAMMap_A[0][(addr >> 16) & NWRAMMask[0][0]];
-                return ptr ? *(u16*)&ptr[addr & 0xFFFF] : 0;
+                return ptr ? *(le_u16*)&ptr[addr & 0xFFFF] : 0;
             }
             if (addr >= NWRAMStart[0][1] && addr < NWRAMEnd[0][1])
             {
                 u8* ptr = NWRAMMap_B[0][(addr >> 15) & NWRAMMask[0][1]];
-                return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
             }
             if (addr >= NWRAMStart[0][2] && addr < NWRAMEnd[0][2])
             {
                 u8* ptr = NWRAMMap_C[0][(addr >> 15) & NWRAMMask[0][2]];
-                return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
             }
         }
         return NDS::ARM9Read16(addr);
@@ -1594,7 +1594,7 @@ u16 DSi::ARM9Read16(u32 addr)
         return (ExMemCnt[0] & (1<<7)) ? 0 : 0xFFFF;
 
     case 0x0C000000:
-        return *(u16*)&MainRAM[addr & MainRAMMask];
+        return *(le_u16*)&MainRAM[addr & MainRAMMask];
     }
 
     return NDS::ARM9Read16(addr);
@@ -1609,7 +1609,7 @@ u32 DSi::ARM9Read32(u32 addr)
     {
         if ((addr >= 0xFFFF8000) && (SCFG_BIOS & (1<<0)))
             return 0xFFFFFFFF;
-        return *(u32*)&ARM9iBIOS[addr & 0xFFFF];
+        return *(le_u32*)&ARM9iBIOS[addr & 0xFFFF];
     }
 
     switch (addr & 0xFF000000)
@@ -1626,17 +1626,17 @@ u32 DSi::ARM9Read32(u32 addr)
             if (addr >= NWRAMStart[0][0] && addr < NWRAMEnd[0][0])
             {
                 u8* ptr = NWRAMMap_A[0][(addr >> 16) & NWRAMMask[0][0]];
-                return ptr ? *(u32*)&ptr[addr & 0xFFFF] : 0;
+                return ptr ? *(le_u32*)&ptr[addr & 0xFFFF] : 0;
             }
             if (addr >= NWRAMStart[0][1] && addr < NWRAMEnd[0][1])
             {
                 u8* ptr = NWRAMMap_B[0][(addr >> 15) & NWRAMMask[0][1]];
-                return ptr ? *(u32*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u32*)&ptr[addr & 0x7FFF] : 0;
             }
             if (addr >= NWRAMStart[0][2] && addr < NWRAMEnd[0][2])
             {
                 u8* ptr = NWRAMMap_C[0][(addr >> 15) & NWRAMMask[0][2]];
-                return ptr ? *(u32*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u32*)&ptr[addr & 0x7FFF] : 0;
             }
         }
         return NDS::ARM9Read32(addr);
@@ -1650,7 +1650,7 @@ u32 DSi::ARM9Read32(u32 addr)
         return (ExMemCnt[0] & (1<<7)) ? 0 : 0xFFFFFFFF;
 
     case 0x0C000000:
-        return *(u32*)&MainRAM[addr & MainRAMMask];
+        return *(le_u32*)&MainRAM[addr & MainRAMMask];
     }
 
     return NDS::ARM9Read32(addr);
@@ -1774,7 +1774,7 @@ void DSi::ARM9Write16(u32 addr, u16 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_A[page * 0x10000];
-                    *(u16*)&ptr[addr & 0xFFFF] = val;
+                    *(le_u16*)&ptr[addr & 0xFFFF] = val;
                     JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_NewSharedWRAM_A>(addr);
                 }
                 return;
@@ -1792,7 +1792,7 @@ void DSi::ARM9Write16(u32 addr, u16 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_B[page * 0x8000];
-                    *(u16*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u16*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_NewSharedWRAM_B>(addr);
                 }
                 return;
@@ -1810,7 +1810,7 @@ void DSi::ARM9Write16(u32 addr, u16 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_C[page * 0x8000];
-                    *(u16*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u16*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_NewSharedWRAM_C>(addr);
                 }
                 return;
@@ -1829,7 +1829,7 @@ void DSi::ARM9Write16(u32 addr, u16 val)
 
     case 0x0C000000:
         JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u16*)&MainRAM[addr & MainRAMMask] = val;
+        *(le_u16*)&MainRAM[addr & MainRAMMask] = val;
         return;
     }
 
@@ -1859,7 +1859,7 @@ void DSi::ARM9Write32(u32 addr, u32 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_A[page * 0x10000];
-                    *(u32*)&ptr[addr & 0xFFFF] = val;
+                    *(le_u32*)&ptr[addr & 0xFFFF] = val;
                     JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_NewSharedWRAM_A>(addr);
                 }
                 return;
@@ -1877,7 +1877,7 @@ void DSi::ARM9Write32(u32 addr, u32 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_B[page * 0x8000];
-                    *(u32*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u32*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_NewSharedWRAM_B>(addr);
                 }
                 return;
@@ -1895,7 +1895,7 @@ void DSi::ARM9Write32(u32 addr, u32 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_C[page * 0x8000];
-                    *(u32*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u32*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_NewSharedWRAM_C>(addr);
                 }
                 return;
@@ -1914,7 +1914,7 @@ void DSi::ARM9Write32(u32 addr, u32 val)
 
     case 0x0C000000:
         JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u32*)&MainRAM[addr & MainRAMMask] = val;
+        *(le_u32*)&MainRAM[addr & MainRAMMask] = val;
         return;
     }
 
@@ -2031,7 +2031,7 @@ u16 DSi::ARM7Read16(u32 addr)
         if (addr < ARM7BIOSProt && ARM7.R[15] >= ARM7BIOSProt)
             return 0xFFFF;
 
-        return *(u16*)&ARM7iBIOS[addr & 0xFFFF];
+        return *(le_u16*)&ARM7iBIOS[addr & 0xFFFF];
     }
 
     switch (addr & 0xFF800000)
@@ -2043,17 +2043,17 @@ u16 DSi::ARM7Read16(u32 addr)
             if (addr >= NWRAMStart[1][0] && addr < NWRAMEnd[1][0])
             {
                 u8* ptr = NWRAMMap_A[1][(addr >> 16) & NWRAMMask[1][0]];
-                return ptr ? *(u16*)&ptr[addr & 0xFFFF] : 0;
+                return ptr ? *(le_u16*)&ptr[addr & 0xFFFF] : 0;
             }
             if (addr >= NWRAMStart[1][1] && addr < NWRAMEnd[1][1])
             {
                 u8* ptr = NWRAMMap_B[1][(addr >> 15) & NWRAMMask[1][1]];
-                return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
             }
             if (addr >= NWRAMStart[1][2] && addr < NWRAMEnd[1][2])
             {
                 u8* ptr = NWRAMMap_C[1][(addr >> 15) & NWRAMMask[1][2]];
-                return ptr ? *(u16*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u16*)&ptr[addr & 0x7FFF] : 0;
             }
         }
         return NDS::ARM7Read16(addr);
@@ -2071,7 +2071,7 @@ u16 DSi::ARM7Read16(u32 addr)
 
     case 0x0C000000:
     case 0x0C800000:
-        return *(u16*)&MainRAM[addr & MainRAMMask];
+        return *(le_u16*)&MainRAM[addr & MainRAMMask];
     }
 
     return NDS::ARM7Read16(addr);
@@ -2090,7 +2090,7 @@ u32 DSi::ARM7Read32(u32 addr)
         if (addr < ARM7BIOSProt && ARM7.R[15] >= ARM7BIOSProt)
             return 0xFFFFFFFF;
 
-        return *(u32*)&ARM7iBIOS[addr & 0xFFFF];
+        return *(le_u32*)&ARM7iBIOS[addr & 0xFFFF];
     }
 
     switch (addr & 0xFF800000)
@@ -2102,17 +2102,17 @@ u32 DSi::ARM7Read32(u32 addr)
             if (addr >= NWRAMStart[1][0] && addr < NWRAMEnd[1][0])
             {
                 u8* ptr = NWRAMMap_A[1][(addr >> 16) & NWRAMMask[1][0]];
-                return ptr ? *(u32*)&ptr[addr & 0xFFFF] : 0;
+                return ptr ? *(le_u32*)&ptr[addr & 0xFFFF] : 0;
             }
             if (addr >= NWRAMStart[1][1] && addr < NWRAMEnd[1][1])
             {
                 u8* ptr = NWRAMMap_B[1][(addr >> 15) & NWRAMMask[1][1]];
-                return ptr ? *(u32*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u32*)&ptr[addr & 0x7FFF] : 0;
             }
             if (addr >= NWRAMStart[1][2] && addr < NWRAMEnd[1][2])
             {
                 u8* ptr = NWRAMMap_C[1][(addr >> 15) & NWRAMMask[1][2]];
-                return ptr ? *(u32*)&ptr[addr & 0x7FFF] : 0;
+                return ptr ? *(le_u32*)&ptr[addr & 0x7FFF] : 0;
             }
         }
         return NDS::ARM7Read32(addr);
@@ -2130,7 +2130,7 @@ u32 DSi::ARM7Read32(u32 addr)
 
     case 0x0C000000:
     case 0x0C800000:
-        return *(u32*)&NDS::MainRAM[addr & NDS::MainRAMMask];
+        return *(le_u32*)&NDS::MainRAM[addr & NDS::MainRAMMask];
     }
 
     return NDS::ARM7Read32(addr);
@@ -2248,7 +2248,7 @@ void DSi::ARM7Write16(u32 addr, u16 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_A[page * 0x10000];
-                    *(u16*)&ptr[addr & 0xFFFF] = val;
+                    *(le_u16*)&ptr[addr & 0xFFFF] = val;
                     JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_NewSharedWRAM_A>(addr);
                 }
                 return;
@@ -2266,7 +2266,7 @@ void DSi::ARM7Write16(u32 addr, u16 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_B[page * 0x8000];
-                    *(u16*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u16*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_NewSharedWRAM_B>(addr);
                 }
                 return;
@@ -2284,7 +2284,7 @@ void DSi::ARM7Write16(u32 addr, u16 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_C[page * 0x8000];
-                    *(u16*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u16*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_NewSharedWRAM_C>(addr);
                 }
                 return;
@@ -2307,7 +2307,7 @@ void DSi::ARM7Write16(u32 addr, u16 val)
     case 0x0C000000:
     case 0x0C800000:
         JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u16*)&NDS::MainRAM[addr & NDS::MainRAMMask] = val;
+        *(le_u16*)&NDS::MainRAM[addr & NDS::MainRAMMask] = val;
         return;
     }
 
@@ -2338,7 +2338,7 @@ void DSi::ARM7Write32(u32 addr, u32 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_A[page * 0x10000];
-                    *(u32*)&ptr[addr & 0xFFFF] = val;
+                    *(le_u32*)&ptr[addr & 0xFFFF] = val;
                     JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_NewSharedWRAM_A>(addr);
                 }
                 return;
@@ -2356,7 +2356,7 @@ void DSi::ARM7Write32(u32 addr, u32 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_B[page * 0x8000];
-                    *(u32*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u32*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_NewSharedWRAM_B>(addr);
                 }
                 return;
@@ -2374,7 +2374,7 @@ void DSi::ARM7Write32(u32 addr, u32 val)
                     if (bankInfo != destPartSetting)
                         continue;
                     u8* ptr = &NWRAM_C[page * 0x8000];
-                    *(u32*)&ptr[addr & 0x7FFF] = val;
+                    *(le_u32*)&ptr[addr & 0x7FFF] = val;
                     JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_NewSharedWRAM_C>(addr);
                 }
                 return;
@@ -2397,7 +2397,7 @@ void DSi::ARM7Write32(u32 addr, u32 val)
     case 0x0C000000:
     case 0x0C800000:
         JIT.CheckAndInvalidate<1, ARMJIT_Memory::memregion_MainRAM>(addr);
-        *(u32*)&NDS::MainRAM[addr & NDS::MainRAMMask] = val;
+        *(le_u32*)&NDS::MainRAM[addr & NDS::MainRAMMask] = val;
         return;
     }
 

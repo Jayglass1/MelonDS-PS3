@@ -542,20 +542,20 @@ void GPU2D::Write32(u32 addr, u32 val)
 }
 
 
-u16* GPU2D::GetBGExtPal(u32 slot, u32 pal)
+le_u16* GPU2D::GetBGExtPal(u32 slot, u32 pal)
 {
     const u32 PaletteSize = 256 * 2;
     const u32 SlotSize = PaletteSize * 16;
-    return (u16*)&(Num == 0
+    return (le_u16*)&(Num == 0
          ? GPU.VRAMFlat_ABGExtPal
          : GPU.VRAMFlat_BBGExtPal)[slot * SlotSize + pal * PaletteSize];
 }
 
-u16* GPU2D::GetOBJExtPal()
+le_u16* GPU2D::GetOBJExtPal()
 {
     return Num == 0
-         ? (u16*)GPU.VRAMFlat_AOBJExtPal
-         : (u16*)GPU.VRAMFlat_BOBJExtPal;
+         ? (le_u16*)GPU.VRAMFlat_AOBJExtPal
+         : (le_u16*)GPU.VRAMFlat_BOBJExtPal;
 }
 
 

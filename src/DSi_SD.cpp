@@ -340,10 +340,16 @@ void DSi_SDHost::UpdateCardIRQ(u16 oldmask)
 
 void DSi_SDHost::SendResponse(u32 val, bool last)
 {
-    *(u32*)&ResponseBuffer[6] = *(u32*)&ResponseBuffer[4];
-    *(u32*)&ResponseBuffer[4] = *(u32*)&ResponseBuffer[2];
-    *(u32*)&ResponseBuffer[2] = *(u32*)&ResponseBuffer[0];
-    *(u32*)&ResponseBuffer[0] = val;
+    // ResponseBuffer is made of 16-bit words, lowest word first. A new 32-bit
+    // response is pushed in at the front and the older ones move back two words.
+    ResponseBuffer[6] = ResponseBuffer[4];
+    ResponseBuffer[7] = ResponseBuffer[5];
+    ResponseBuffer[4] = ResponseBuffer[2];
+    ResponseBuffer[5] = ResponseBuffer[3];
+    ResponseBuffer[2] = ResponseBuffer[0];
+    ResponseBuffer[3] = ResponseBuffer[1];
+    ResponseBuffer[0] = (u16)(val & 0xFFFF);
+    ResponseBuffer[1] = (u16)(val >> 16);
 
     if (last) SetIRQ(0);
 }
@@ -366,7 +372,7 @@ u32 DSi_SDHost::DataRX(const u8* data, u32 len)
 
     u32 f = CurFIFO ^ 1;
     for (u32 i = 0; i < len; i += 2)
-        DataFIFO[f].Write(*(u16*)&data[i]);
+        DataFIFO[f].Write(*(le_u16*)&data[i]);
 
     //CurFIFO = f;
     //SetIRQ(24);
@@ -451,7 +457,7 @@ u32 DSi_SDHost::DataTX(u8* data, u32 len)
     }
 
     for (u32 i = 0; i < len; i += 2)
-        *(u16*)&data[i] = DataFIFO[f].Read();
+        *(le_u16*)&data[i] = DataFIFO[f].Read();
 
     CurFIFO ^= 1;
     BlockCountInternal--;
@@ -863,7 +869,7 @@ void DSi_MMCStorage::Reset()
 
     // checkme
     memset(SCR, 0, 8);
-    *(u32*)&SCR[0] = 0x012A0000;
+    *(le_u32*)&SCR[0] = 0x012A0000;
 
     memset(SSR, 0, 64);
 
@@ -926,10 +932,10 @@ void DSi_MMCStorage::SendCMD(MMCCommand cmd, u32 param)
 
     case MMCCommand::AllGetCID:
     case MMCCommand::GetCID:
-        Host->SendResponse(*(u32*)&CID[12], false);
-        Host->SendResponse(*(u32*)&CID[8], false);
-        Host->SendResponse(*(u32*)&CID[4], false);
-        Host->SendResponse(*(u32*)&CID[0], true);
+        Host->SendResponse(*(le_u32*)&CID[12], false);
+        Host->SendResponse(*(le_u32*)&CID[8], false);
+        Host->SendResponse(*(le_u32*)&CID[4], false);
+        Host->SendResponse(*(le_u32*)&CID[0], true);
         if (cmd == MMCCommand::AllGetCID) SetState(0x02);
         return;
 
@@ -961,10 +967,10 @@ void DSi_MMCStorage::SendCMD(MMCCommand cmd, u32 param)
         return;
 
     case MMCCommand::GetCSD:
-        Host->SendResponse(*(u32*)&CSD[12], false);
-        Host->SendResponse(*(u32*)&CSD[8], false);
-        Host->SendResponse(*(u32*)&CSD[4], false);
-        Host->SendResponse(*(u32*)&CSD[0], true);
+        Host->SendResponse(*(le_u32*)&CSD[12], false);
+        Host->SendResponse(*(le_u32*)&CSD[8], false);
+        Host->SendResponse(*(le_u32*)&CSD[4], false);
+        Host->SendResponse(*(le_u32*)&CSD[0], true);
         return;
 
     case MMCCommand::StopTransmission:

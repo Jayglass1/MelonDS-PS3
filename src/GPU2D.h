@@ -53,8 +53,8 @@ public:
     void UpdateRegistersPostDraw(bool reset);
     void UpdateWindows(u32 line);
 
-    u16* GetBGExtPal(u32 slot, u32 pal);
-    u16* GetOBJExtPal();
+    le_u16* GetBGExtPal(u32 slot, u32 pal);
+    le_u16* GetOBJExtPal();
 
     void GetBGVRAM(u8*& data, u32& mask) const;
     void GetOBJVRAM(u8*& data, u32& mask) const;

@@ -54,7 +54,7 @@ void CartRetailNAND::Reset()
     SRAMWindow = 0;
 
     // ROM header 94/96 = SRAM addr start / 0x20000
-    SRAMBase = *(u16*)&ROM[0x96] << 17;
+    SRAMBase = *(le_u16*)&ROM[0x96] << 17;
 
     memset(SRAMWriteBuffer, 0, 0x800);
 }
@@ -100,7 +100,7 @@ u32 CartRetailNAND::SRAMRead32()
     }
     else
     {
-        ret = *(u32*)&SRAM[addrhi | addrlo];
+        ret = *(le_u32*)&SRAM[addrhi | addrlo];
         addrlo = (addrlo + 4) & 0xFFF;
     }
 
@@ -246,7 +246,7 @@ u32 CartRetailNAND::ROMCommandReceive()
             if (ROMAddr >= 0x30)
                 return 0;
 
-            u32 ret = *(u32*)&SRAMID[ROMAddr];
+            u32 ret = *(le_u32*)&SRAMID[ROMAddr];
             ROMAddr += 4;
             return ret;
         }
@@ -290,7 +290,7 @@ void CartRetailNAND::ROMCommandTransmit(u32 val)
     case 0x81: // write SRAM data
         if (SRAMAddr)
         {
-            *(u32*)&SRAMWriteBuffer[SRAMWritePos] = val;
+            *(le_u32*)&SRAMWriteBuffer[SRAMWritePos] = val;
 
             // TODO verify what happens when writing more than 0x800 bytes (or less)
             SRAMWritePos += 4;

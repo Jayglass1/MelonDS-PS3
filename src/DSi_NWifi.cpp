@@ -206,19 +206,19 @@ void DSi_NWifi::Reset()
 
     memset(EEPROM, 0, 0x400);
 
-    *(u32*)&EEPROM[0x000] = 0x300;
-    *(u16*)&EEPROM[0x008] = 0x8348; // TODO: determine properly (country code)
+    *(le_u32*)&EEPROM[0x000] = 0x300;
+    *(le_u16*)&EEPROM[0x008] = 0x8348; // TODO: determine properly (country code)
     memcpy(&EEPROM[0x00A], mac.data(), mac.size());
-    *(u32*)&EEPROM[0x010] = 0x60000000;
+    *(le_u32*)&EEPROM[0x010] = 0x60000000;
 
     memset(&EEPROM[0x03C], 0xFF, 0x70);
     memset(&EEPROM[0x140], 0xFF, 0x8);
 
     u16 chk = 0xFFFF;
     for (int i = 0; i < 0x300; i+=2)
-        chk ^= *(u16*)&EEPROM[i];
+        chk ^= *(le_u16*)&EEPROM[i];
 
-    *(u16*)&EEPROM[0x004] = chk;
+    *(le_u16*)&EEPROM[0x004] = chk;
 
     // TODO: SDIO reset shouldn't reset this
     // this is reset by the internal reset register, and that also resets EEPROM init
@@ -905,11 +905,11 @@ void DSi_NWifi::HTC_Command()
             // 0003 0102 00 03 0600 00 00
             // 0003 0103 00 04 0600 00 00
             // 0003 0104 00 05 0600 00 00
-            *(u16*)&svc_resp[0] = svc_id;
+            *(le_u16*)&svc_resp[0] = svc_id;
             svc_resp[2] = 0;
             svc_resp[3] = (svc_id & 0xFF) + 1;
-            *(u16*)&svc_resp[4] = (svc_id==0x0100) ? 0x0602 : 0x0600; // max message size
-            *(u16*)&svc_resp[6] = 0x0000;
+            *(le_u16*)&svc_resp[4] = (svc_id==0x0100) ? 0x0602 : 0x0600; // max message size
+            *(le_u16*)&svc_resp[6] = 0x0000;
             SendWMIEvent(0, 0x0003, svc_resp, 8);
         }
         break;
@@ -920,11 +920,11 @@ void DSi_NWifi::HTC_Command()
             memcpy(&ready_evt[0], &EEPROM[0xA], 6); // MAC address
             ready_evt[6] = 0x02;
             ready_evt[7] = 0;
-            *(u32*)&ready_evt[8] = 0x2300006C;
+            *(le_u32*)&ready_evt[8] = 0x2300006C;
             SendWMIEvent(1, 0x1001, ready_evt, 12);
 
             u8 regdomain_evt[4];
-            *(u32*)&regdomain_evt[0] = 0x80000000 | (*(u16*)&EEPROM[0x008] & 0x0FFF);
+            *(le_u32*)&regdomain_evt[0] = 0x80000000 | (*(le_u16*)&EEPROM[0x008] & 0x0FFF);
             SendWMIEvent(1, 0x1006, regdomain_evt, 4);
 
             BootPhase = 2;
@@ -978,7 +978,7 @@ void DSi_NWifi::WMI_Command()
                 ConnectionStatus = 0;
 
                 u8 reply[11];
-                *(u16*)&reply[0] = 3; // checkme
+                *(le_u16*)&reply[0] = 3; // checkme
                 memcpy(&reply[2], WifiAP::APMac, 6);
                 reply[8] = 3; // disconnect reason (via cmd)
                 reply[9] = 0; // assoc-response length (none here)
@@ -1073,8 +1073,8 @@ void DSi_NWifi::WMI_Command()
                 reply[0] = 0;
                 reply[1] = nchan;
                 for (int i = 0; i < nchan; i++)
-                    *(u16*)&reply[2 + (i*2)] = 2412 + (i*5);
-                *(u16*)&reply[2 + (nchan*2)] = 0;
+                    *(le_u16*)&reply[2 + (i*2)] = 2412 + (i*5);
+                *(le_u16*)&reply[2 + (nchan*2)] = 0;
 
                 SendWMIEvent(1, 0x000E, reply, 4+(nchan*2));
             }
@@ -1127,9 +1127,9 @@ void DSi_NWifi::WMI_Command()
                         u32 source = MB_Read32(0);
 
                         u8 reply[12];
-                        *(u32*)&reply[0] = 0x3007;
-                        *(u32*)&reply[4] = cookie;
-                        *(u32*)&reply[8] = source;
+                        *(le_u32*)&reply[0] = 0x3007;
+                        *(le_u32*)&reply[4] = cookie;
+                        *(le_u32*)&reply[8] = source;
 
                         SendWMIEvent(1, 0x1010, reply, 12);
                     }
@@ -1224,8 +1224,8 @@ void DSi_NWifi::WMI_ConnectToNetwork()
     u16 channel = MB_Read16(0);
 
     u8 bssid[6];
-    *(u32*)&bssid[0] = MB_Read32(0);
-    *(u16*)&bssid[4] = MB_Read16(0);
+    *(le_u32*)&bssid[0] = MB_Read32(0);
+    *(le_u16*)&bssid[4] = MB_Read16(0);
 
     u32 flags = MB_Read32(0);
 
@@ -1246,11 +1246,11 @@ void DSi_NWifi::WMI_ConnectToNetwork()
     u8 reply[20];
 
     // hope this is right!
-    *(u16*)&reply[0] = 2437; // channel
+    *(le_u16*)&reply[0] = 2437; // channel
     memcpy(&reply[2], WifiAP::APMac, 6); // BSSID
-    *(u16*)&reply[8] = 128; // listen interval
-    *(u16*)&reply[10] = 128; // beacon interval
-    *(u32*)&reply[12] = 0x01; // network type
+    *(le_u16*)&reply[8] = 128; // listen interval
+    *(le_u16*)&reply[10] = 128; // beacon interval
+    *(le_u32*)&reply[12] = 0x01; // network type
 
     reply[16] = 0x16; // beaconIeLen ???
     reply[17] = 0x2F; // assocReqLen
@@ -1312,10 +1312,10 @@ void DSi_NWifi::WMI_SendPacket(u16 len)
     u8 srcmac[6];
     u16 plen;
 
-    *(u32*)&dstmac[0] = MB_Read32(0);
-    *(u16*)&dstmac[4] = MB_Read16(0);
-    *(u32*)&srcmac[0] = MB_Read32(0);
-    *(u16*)&srcmac[4] = MB_Read16(0);
+    *(le_u32*)&dstmac[0] = MB_Read32(0);
+    *(le_u16*)&dstmac[4] = MB_Read16(0);
+    *(le_u32*)&srcmac[0] = MB_Read32(0);
+    *(le_u16*)&srcmac[4] = MB_Read16(0);
     plen = MB_Read16(0);
     plen = ((plen & 0xFF00) >> 8) | ((plen & 0x00FF) << 8);
 
@@ -1340,7 +1340,7 @@ void DSi_NWifi::WMI_SendPacket(u16 len)
 
     memcpy(&LANBuffer[0], dstmac, 6); // destination MAC
     memcpy(&LANBuffer[6], srcmac, 6); // source MAC
-    *(u16*)&LANBuffer[12] = ethertype; // type
+    *(le_u16*)&LANBuffer[12] = ethertype; // type
     for (int i = 0; i < lan_len-14; i++)
     {
         LANBuffer[14+i] = Mailbox[0].Read();
@@ -1449,8 +1449,8 @@ void DSi_NWifi::SendWMIBSSInfo(u8 type, u8* data, u32 len)
     Mailbox[8].Write(type);
     Mailbox[8].Write(0x1B); // 'snr'
     MB_Write16(8, 0xFFBC);   // RSSI
-    MB_Write32(8, *(u32*)&WifiAP::APMac[0]);
-    MB_Write16(8, *(u16*)&WifiAP::APMac[4]);
+    MB_Write32(8, *(le_u32*)&WifiAP::APMac[0]);
+    MB_Write16(8, *(le_u16*)&WifiAP::APMac[4]);
     MB_Write32(8, 0); // ieMask
 
     for (u32 i = 0; i < len; i++)
@@ -1470,7 +1470,7 @@ void DSi_NWifi::CheckRX()
     while (rxlen > 0)
     {
         // check destination MAC
-        if (*(u32*)&LANBuffer[0] != 0xFFFFFFFF || *(u16*)&LANBuffer[4] != 0xFFFF)
+        if (*(le_u32*)&LANBuffer[0] != 0xFFFFFFFF || *(le_u16*)&LANBuffer[4] != 0xFFFF)
         {
             if (memcmp(&LANBuffer[0], &EEPROM[0x00A], 6))
             {
@@ -1488,7 +1488,7 @@ void DSi_NWifi::CheckRX()
 
         // packet is good
 
-        Log(LogLevel::Debug, "WMI: receive packet %04X, len=%d\n", *(u16*)&LANBuffer[12], rxlen);
+        Log(LogLevel::Debug, "WMI: receive packet %04X, len=%d\n", (u16)*(le_u16*)&LANBuffer[12], rxlen);
 
         /*for (int i = 0; i < rxlen; i++)
         {
@@ -1500,7 +1500,7 @@ void DSi_NWifi::CheckRX()
         int datalen = rxlen - 14; // length of packet body
 
         u16 hdr = 0x0000;
-        //if (*(u16*)&LANBuffer[12] == 0x0608) // HAX!!!
+        //if (*(le_u16*)&LANBuffer[12] == 0x0608) // HAX!!!
         //    hdr = 0x1C00;
         hdr = 0x80;
 
@@ -1514,10 +1514,10 @@ void DSi_NWifi::CheckRX()
         Mailbox[8].Write(0);
 
         MB_Write16(8, hdr);
-        MB_Write32(8, *(u32*)&LANBuffer[0]);
-        MB_Write16(8, *(u16*)&LANBuffer[4]);
-        MB_Write32(8, *(u32*)&LANBuffer[6]);
-        MB_Write16(8, *(u16*)&LANBuffer[10]);
+        MB_Write32(8, *(le_u32*)&LANBuffer[0]);
+        MB_Write16(8, *(le_u16*)&LANBuffer[4]);
+        MB_Write32(8, *(le_u32*)&LANBuffer[6]);
+        MB_Write16(8, *(le_u16*)&LANBuffer[10]);
         u16 plen = datalen + 8;
         plen = ((plen & 0xFF00) >> 8) | ((plen & 0x00FF) << 8);
         MB_Write16(8, plen);
@@ -1525,7 +1525,7 @@ void DSi_NWifi::CheckRX()
         MB_Write16(8, 0xAAAA);
         MB_Write16(8, 0x0003);
         MB_Write16(8, 0x0000);
-        MB_Write16(8, *(u16*)&LANBuffer[12]);
+        MB_Write16(8, *(le_u16*)&LANBuffer[12]);
 
         for (int i = 0; i < datalen; i++)
             Mailbox[8].Write(LANBuffer[14+i]);
@@ -1560,7 +1560,7 @@ u32 DSi_NWifi::WindowRead(u32 addr)
     // hax
     if ((addr & 0x1FFC00) == 0x1FFC00)
     {
-        return *(u32*)&EEPROM[addr & 0x3FF];
+        return *(le_u32*)&EEPROM[addr & 0x3FF];
     }
 
     switch (addr)

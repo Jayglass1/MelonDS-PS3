@@ -1420,12 +1420,16 @@ NonStupidBitField<Size/VRAMDirtyGranularity> VRAMTrackingSet<Size, MappingGranul
                 static_assert(VRAMDirtyGranularity == 512, "");
                 if (MappingGranularity == 16*1024)
                 {
-                    u32 dirty = ((u32*)gpu.VRAMDirty[num].Data)[i & (gpu.VRAMMask[num] >> 14)];
+                    // bitfield words are u64; pick out the 32-bit slice by shifting
+                    // so the result doesn't depend on the host's byte order
+                    u32 slice = i & (gpu.VRAMMask[num] >> 14);
+                    u32 dirty = (u32)(gpu.VRAMDirty[num].Data[slice / 2] >> ((slice&1)*32));
                     result.Data[i / 2] |= (u64)dirty << ((i&1)*32);
                 }
                 else if (MappingGranularity == 8*1024)
                 {
-                    u16 dirty = ((u16*)gpu.VRAMDirty[num].Data)[i & (gpu.VRAMMask[num] >> 13)];
+                    u32 slice = i & (gpu.VRAMMask[num] >> 13);
+                    u16 dirty = (u16)(gpu.VRAMDirty[num].Data[slice / 4] >> ((slice&3)*16));
                     result.Data[i / 4] |= (u64)dirty << ((i&3)*16);
                 }
                 else if (MappingGranularity == 128*1024)

@@ -393,7 +393,7 @@ void ARMv5::ICacheLookup(u32 addr)
     else
     {
         for (int i = 0; i < 32; i+=4)
-            *(u32*)&ptr[i] = NDS.ARM9Read32(addr+i);
+            *(le_u32*)&ptr[i] = NDS.ARM9Read32(addr+i);
     }
 
     ICacheTags[line] = tag;
@@ -795,7 +795,7 @@ u32 ARMv5::CodeRead32(u32 addr, bool branch)
     if (addr < ITCMSize)
     {
         CodeCycles = 1;
-        return *(u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
+        return *(le_u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
     }
 
     CodeCycles = RegionCodeCycles;
@@ -806,10 +806,10 @@ u32 ARMv5::CodeRead32(u32 addr, bool branch)
         else
             CodeCycles = 1;
 
-        //return *(u32*)&CurICacheLine[addr & 0x1C];
+        //return *(le_u32*)&CurICacheLine[addr & 0x1C];
     }
 
-    if (CodeMem.Mem) return *(u32*)&CodeMem.Mem[addr & CodeMem.Mask];
+    if (CodeMem.Mem) return *(le_u32*)&CodeMem.Mem[addr & CodeMem.Mask];
 
     return BusRead32(addr);
 }
@@ -857,13 +857,13 @@ void ARMv5::DataRead16(u32 addr, u32* val)
     if (addr < ITCMSize)
     {
         DataCycles = 1;
-        *val = *(u16*)&ITCM[addr & (ITCMPhysicalSize - 1)];
+        *val = *(le_u16*)&ITCM[addr & (ITCMPhysicalSize - 1)];
         return;
     }
     if ((addr & DTCMMask) == DTCMBase)
     {
         DataCycles = 1;
-        *val = *(u16*)&DTCM[addr & (DTCMPhysicalSize - 1)];
+        *val = *(le_u16*)&DTCM[addr & (DTCMPhysicalSize - 1)];
         return;
     }
 
@@ -886,13 +886,13 @@ void ARMv5::DataRead32(u32 addr, u32* val)
     if (addr < ITCMSize)
     {
         DataCycles = 1;
-        *val = *(u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
+        *val = *(le_u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
         return;
     }
     if ((addr & DTCMMask) == DTCMBase)
     {
         DataCycles = 1;
-        *val = *(u32*)&DTCM[addr & (DTCMPhysicalSize - 1)];
+        *val = *(le_u32*)&DTCM[addr & (DTCMPhysicalSize - 1)];
         return;
     }
 
@@ -907,13 +907,13 @@ void ARMv5::DataRead32S(u32 addr, u32* val)
     if (addr < ITCMSize)
     {
         DataCycles += 1;
-        *val = *(u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
+        *val = *(le_u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
         return;
     }
     if ((addr & DTCMMask) == DTCMBase)
     {
         DataCycles += 1;
-        *val = *(u32*)&DTCM[addr & (DTCMPhysicalSize - 1)];
+        *val = *(le_u32*)&DTCM[addr & (DTCMPhysicalSize - 1)];
         return;
     }
 
@@ -964,14 +964,14 @@ void ARMv5::DataWrite16(u32 addr, u16 val)
     if (addr < ITCMSize)
     {
         DataCycles = 1;
-        *(u16*)&ITCM[addr & (ITCMPhysicalSize - 1)] = val;
+        *(le_u16*)&ITCM[addr & (ITCMPhysicalSize - 1)] = val;
         NDS.JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_ITCM>(addr);
         return;
     }
     if ((addr & DTCMMask) == DTCMBase)
     {
         DataCycles = 1;
-        *(u16*)&DTCM[addr & (DTCMPhysicalSize - 1)] = val;
+        *(le_u16*)&DTCM[addr & (DTCMPhysicalSize - 1)] = val;
         return;
     }
 
@@ -994,14 +994,14 @@ void ARMv5::DataWrite32(u32 addr, u32 val)
     if (addr < ITCMSize)
     {
         DataCycles = 1;
-        *(u32*)&ITCM[addr & (ITCMPhysicalSize - 1)] = val;
+        *(le_u32*)&ITCM[addr & (ITCMPhysicalSize - 1)] = val;
         NDS.JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_ITCM>(addr);
         return;
     }
     if ((addr & DTCMMask) == DTCMBase)
     {
         DataCycles = 1;
-        *(u32*)&DTCM[addr & (DTCMPhysicalSize - 1)] = val;
+        *(le_u32*)&DTCM[addr & (DTCMPhysicalSize - 1)] = val;
         return;
     }
 
@@ -1016,7 +1016,7 @@ void ARMv5::DataWrite32S(u32 addr, u32 val)
     if (addr < ITCMSize)
     {
         DataCycles += 1;
-        *(u32*)&ITCM[addr & (ITCMPhysicalSize - 1)] = val;
+        *(le_u32*)&ITCM[addr & (ITCMPhysicalSize - 1)] = val;
 #ifdef JIT_ENABLED
         NDS.JIT.CheckAndInvalidate<0, ARMJIT_Memory::memregion_ITCM>(addr);
 #endif
@@ -1025,7 +1025,7 @@ void ARMv5::DataWrite32S(u32 addr, u32 val)
     if ((addr & DTCMMask) == DTCMBase)
     {
         DataCycles += 1;
-        *(u32*)&DTCM[addr & (DTCMPhysicalSize - 1)] = val;
+        *(le_u32*)&DTCM[addr & (DTCMPhysicalSize - 1)] = val;
         return;
     }
 

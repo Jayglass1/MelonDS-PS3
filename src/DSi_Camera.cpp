@@ -536,17 +536,17 @@ void DSi_Camera::StartTransfer()
     u8 state = MCURegs[0x2104];
     if (state == 3) // preview
     {
-        FrameWidth = *(u16*)&MCURegs[0x2703];
-        FrameHeight = *(u16*)&MCURegs[0x2705];
-        FrameReadMode = *(u16*)&MCURegs[0x2717];
-        FrameFormat = *(u16*)&MCURegs[0x2755];
+        FrameWidth = *(le_u16*)&MCURegs[0x2703];
+        FrameHeight = *(le_u16*)&MCURegs[0x2705];
+        FrameReadMode = *(le_u16*)&MCURegs[0x2717];
+        FrameFormat = *(le_u16*)&MCURegs[0x2755];
     }
     else if (state == 7) // capture
     {
-        FrameWidth = *(u16*)&MCURegs[0x2707];
-        FrameHeight = *(u16*)&MCURegs[0x2709];
-        FrameReadMode = *(u16*)&MCURegs[0x272D];
-        FrameFormat = *(u16*)&MCURegs[0x2757];
+        FrameWidth = *(le_u16*)&MCURegs[0x2707];
+        FrameHeight = *(le_u16*)&MCURegs[0x2709];
+        FrameReadMode = *(le_u16*)&MCURegs[0x272D];
+        FrameFormat = *(le_u16*)&MCURegs[0x2757];
     }
     else
     {

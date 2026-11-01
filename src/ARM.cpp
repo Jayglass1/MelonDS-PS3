@@ -1082,16 +1082,16 @@ void ARMv5::WriteMem(u32 addr, int size, u32 v)
     if (addr < ITCMSize)
     {
         if (size == 8) *(u8*)&ITCM[addr & (ITCMPhysicalSize - 1)] = (u8)v;
-        else if (size == 16) *(u16*)&ITCM[addr & (ITCMPhysicalSize - 1)] = (u16)v;
-        else if (size == 32) *(u32*)&ITCM[addr & (ITCMPhysicalSize - 1)] = (u32)v;
+        else if (size == 16) *(le_u16*)&ITCM[addr & (ITCMPhysicalSize - 1)] = (u16)v;
+        else if (size == 32) *(le_u32*)&ITCM[addr & (ITCMPhysicalSize - 1)] = (u32)v;
         else {}
         return;
     }
     else if ((addr & DTCMMask) == DTCMBase)
     {
         if (size == 8) *(u8*)&DTCM[addr & (DTCMPhysicalSize - 1)] = (u8)v;
-        else if (size == 16) *(u16*)&DTCM[addr & (DTCMPhysicalSize - 1)] = (u16)v;
-        else if (size == 32) *(u32*)&DTCM[addr & (DTCMPhysicalSize - 1)] = (u32)v;
+        else if (size == 16) *(le_u16*)&DTCM[addr & (DTCMPhysicalSize - 1)] = (u16)v;
+        else if (size == 32) *(le_u32*)&DTCM[addr & (DTCMPhysicalSize - 1)] = (u32)v;
         else {}
         return;
     }
@@ -1103,15 +1103,15 @@ u32 ARMv5::ReadMem(u32 addr, int size)
     if (addr < ITCMSize)
     {
         if (size == 8) return *(u8*)&ITCM[addr & (ITCMPhysicalSize - 1)];
-        else if (size == 16) return *(u16*)&ITCM[addr & (ITCMPhysicalSize - 1)];
-        else if (size == 32) return *(u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
+        else if (size == 16) return *(le_u16*)&ITCM[addr & (ITCMPhysicalSize - 1)];
+        else if (size == 32) return *(le_u32*)&ITCM[addr & (ITCMPhysicalSize - 1)];
         else return 0xfeedface;
     }
     else if ((addr & DTCMMask) == DTCMBase)
     {
         if (size == 8) return *(u8*)&DTCM[addr & (DTCMPhysicalSize - 1)];
-        else if (size == 16) return *(u16*)&DTCM[addr & (DTCMPhysicalSize - 1)];
-        else if (size == 32) return *(u32*)&DTCM[addr & (DTCMPhysicalSize - 1)];
+        else if (size == 16) return *(le_u16*)&DTCM[addr & (DTCMPhysicalSize - 1)];
+        else if (size == 32) return *(le_u32*)&DTCM[addr & (DTCMPhysicalSize - 1)];
         else return 0xfeedface;
     }
 

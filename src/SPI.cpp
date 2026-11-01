@@ -60,7 +60,7 @@ u16 CRC16(const u8* data, u32 len, u32 start)
 
 bool FirmwareMem::VerifyCRC16(u32 start, u32 offset, u32 len, u32 crcoffset) const
 {
-    u16 crc_stored =  *(u16*)&FirmwareData.Buffer()[crcoffset];
+    u16 crc_stored =  *(le_u16*)&FirmwareData.Buffer()[crcoffset];
     u16 crc_calced = CRC16(&FirmwareData.Buffer()[offset], len, start);
     return (crc_stored == crc_calced);
 }
@@ -97,7 +97,7 @@ void FirmwareMem::Reset()
 
     // verify shit
     u32 mask = FirmwareData.Mask();
-    Log(LogLevel::Debug, "FW: WIFI CRC16 = %s\n", VerifyCRC16(0x0000, 0x2C, *(u16*)&FirmwareData.Buffer()[0x2C], 0x2A)?"GOOD":"BAD");
+    Log(LogLevel::Debug, "FW: WIFI CRC16 = %s\n", VerifyCRC16(0x0000, 0x2C, *(le_u16*)&FirmwareData.Buffer()[0x2C], 0x2A)?"GOOD":"BAD");
     Log(LogLevel::Debug, "FW: AP1 CRC16 = %s\n", VerifyCRC16(0x0000, 0x7FA00&mask, 0xFE, 0x7FAFE&mask)?"GOOD":"BAD");
     Log(LogLevel::Debug, "FW: AP2 CRC16 = %s\n", VerifyCRC16(0x0000, 0x7FB00&mask, 0xFE, 0x7FBFE&mask)?"GOOD":"BAD");
     Log(LogLevel::Debug, "FW: AP3 CRC16 = %s\n", VerifyCRC16(0x0000, 0x7FC00&mask, 0xFE, 0x7FCFE&mask)?"GOOD":"BAD");
@@ -135,13 +135,13 @@ void FirmwareMem::SetupDirectBoot()
     {
         // The ARMWrite methods are virtual, they'll delegate to DSi if necessary
         for (u32 i = 0; i < 6; i += 2)
-            NDS.ARM9Write16(0x02FFFCF4, *(u16*)&header.MacAddr[i]); // MAC address
+            NDS.ARM9Write16(0x02FFFCF4, *(le_u16*)&header.MacAddr[i]); // MAC address
 
         // checkme
         NDS.ARM9Write16(0x02FFFCFA, header.EnabledChannels); // enabled channels
 
         for (u32 i = 0; i < 0x70; i += 4)
-            NDS.ARM9Write32(0x02FFFC80+i, *(u32*)&userdata.Bytes[i]);
+            NDS.ARM9Write32(0x02FFFC80+i, *(le_u32*)&userdata.Bytes[i]);
     }
     else
     {
@@ -152,7 +152,7 @@ void FirmwareMem::SetupDirectBoot()
         NDS.ARM9Write16(0x027FF876, header.GUIWifiCodeChecksum); // CRC16 for GUI/wifi code
 
         for (u32 i = 0; i < 0x70; i += 4)
-            NDS.ARM9Write32(0x027FFC80+i, *(u32*)&userdata.Bytes[i]);
+            NDS.ARM9Write32(0x027FFC80+i, *(le_u32*)&userdata.Bytes[i]);
     }
 }
 
