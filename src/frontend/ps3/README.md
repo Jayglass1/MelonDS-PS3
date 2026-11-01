@@ -9,8 +9,10 @@ been checked.
 
 With the ps3dev toolchain (GCC 7.2.0, `ps3dev-ubuntu-latest-2020-08-31`):
 
-- All 84 source files (core, teakra, frontend) compile with no warnings and
-  `melonds-ps3.elf` links: a 64-bit big-endian PowerPC executable
+- All source files (core, teakra, frontend) compile and `melonds-ps3.elf` links.
+  The only compiler warning is a `-Wstringop-overflow` in upstream's
+  `VRAMTrackingSet::DeriveState` (GPU VRAM dirty tracking). It is probably a
+  GCC 7.2 false positive, but that has not been confirmed. The ELF is: a 64-bit big-endian PowerPC executable
   (~4.2 MB text, 160 KB data).
 - The compiler detects the PPU as big-endian and selects the byte-swapping
   `le_*` types (`static_assert` check).
