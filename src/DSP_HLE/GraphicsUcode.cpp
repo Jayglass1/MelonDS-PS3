@@ -109,7 +109,7 @@ void GraphicsUcode::TryStartCmd()
     // the point is mostly to convey the idea that these operations aren't free
     // bicubic scaling is infact quite slow!
 
-    u16* pipe = LoadPipe(7);
+    le_u16* pipe = LoadPipe(7);
     u32 pipelen = GetPipeLength(pipe);
 
     u32 cmdtime;
@@ -238,8 +238,8 @@ void GraphicsUcode::CmdScalingNearest()
     src_addr += (((rect_yoffset * src_width) + rect_xoffset) << 1);
     sy = 0x3FF;
 
-    u16* src_mem = GetDataMemPointer(0x4000);
-    u16* dst_mem = GetDataMemPointer(0xC000);
+    le_u16* src_mem = GetDataMemPointer(0x4000);
+    le_u16* dst_mem = GetDataMemPointer(0xC000);
 
     // load first line
     ReadARM9Mem(src_mem, src_addr, rect_width << 1);
@@ -303,8 +303,8 @@ void GraphicsUcode::CmdScalingBilinear()
     src_addr += (((rect_yoffset * src_width) + rect_xoffset) << 1);
     sy = 0x200;
 
-    u16* src_mem = GetDataMemPointer(0x4000);
-    u16* dst_mem = GetDataMemPointer(0xC000);
+    le_u16* src_mem = GetDataMemPointer(0x4000);
+    le_u16* dst_mem = GetDataMemPointer(0xC000);
 
     // load first lines
     // for bilinear scaling, we keep the current line and the next one
@@ -431,8 +431,8 @@ void GraphicsUcode::CmdScalingBicubic()
     src_addr += (((rect_yoffset * src_width) + rect_xoffset) << 1);
     sy = 0x200;
 
-    u16* src_mem = GetDataMemPointer(0x4000);
-    u16* dst_mem = GetDataMemPointer(0xC000);
+    le_u16* src_mem = GetDataMemPointer(0x4000);
+    le_u16* dst_mem = GetDataMemPointer(0xC000);
 
     // load first lines
     // for bicubic scaling, we keep 4 lines around the current line
@@ -534,8 +534,8 @@ void GraphicsUcode::CmdScalingOneThird()
     src_addr += (((rect_yoffset * src_width) + rect_xoffset) << 1);
     sy = 0;
 
-    u16* src_mem = GetDataMemPointer(0x4000);
-    u16* dst_mem = GetDataMemPointer(0xC000);
+    le_u16* src_mem = GetDataMemPointer(0x4000);
+    le_u16* dst_mem = GetDataMemPointer(0xC000);
 
     for (u32 dy = 0; dy < dst_height; dy++)
     {

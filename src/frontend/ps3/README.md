@@ -14,6 +14,8 @@ With the ps3dev toolchain (GCC 7.2.0, `ps3dev-ubuntu-latest-2020-08-31`):
   (~4.2 MB text, 160 KB data).
 - The compiler detects the PPU as big-endian and selects the byte-swapping
   `le_*` types (`static_assert` check).
+- A wrapper-mode build with format warnings on shows no `le_*` value passed
+  through `printf` varargs (which would print swapped bytes on big-endian).
 
 On x86 (sandbox):
 
@@ -22,6 +24,8 @@ On x86 (sandbox):
   type-checks.
 - `src/Endian.h`'s swap logic passes a self-test run as a big-endian host would
   run it (`-DMELONDS_FORCE_ENDIAN_SWAP`).
+- The audio ring buffer passes its unit tests under ASan/UBSan
+  (`ps3-audio-ring-test`).
 - The shared frontend code builds into a headless runner; the bare console runs
   120 frames with identical output from the threaded and single-threaded
   backends.
@@ -40,6 +44,8 @@ any game (no ROM was available); the `.self` signing step (`make_self` needs
 | `Sync_std.cpp` | Threaded version for the host runner | host build + run |
 | `main_headless.cpp` | Host runner, writes screens as PPM + checksum | host build + run |
 | `Video_PS3.cpp`, `Input_PS3.cpp`, `main_ps3.cpp`, `rsxutil.*` | PS3 video, pad, entry point, display setup | compiles and links; **never run** |
+| `AudioRing.h` (+ `AudioRing_test.cpp`) | Audio ring buffer and block-scheduling policy | unit-tested on host (ASan/UBSan) |
+| `Audio_PS3.cpp` | Writes float blocks into the PS3 audio port | compiles and links; **never run** |
 | `compat.h` | std::mutex / to_string / snprintf stand-ins for the PS3 libstdc++ | compiles |
 | `Makefile` | PS3 build (`make` with PS3DEV/PSL1GHT set) | builds the ELF; `.self` step untested |
 
@@ -59,10 +65,14 @@ Host runner:
    Expect it to be slow. SPU offload of the 3D renderer would be the big win.
 3. **ROM memory.** `ParseROM` takes the whole ROM in RAM. The PS3 has roughly
    200 MB usable; large ROMs need streaming.
-4. **No audio output yet** (`SPU.ReadOutput` exists; the PS3 audio port isn't
-   wired up).
-5. **DSi mode.** `UcodeBase::GetDataMemPointer` (DSP HLE) still returns a plain
-   `u16*` into little-endian memory and is wrong on big-endian. DSi only.
+4. **Audio is untested on hardware.** The ring/scheduling logic is unit-tested,
+   but `Audio_PS3.cpp` assumes `audioPortConfig::readIndex` is the address of a
+   64-bit block counter and that the port runs without a notify event queue.
+   The DS (59.83 Hz) and the display (60 Hz) also drift slightly, so expect an
+   occasional dropped or silent block until audio is properly synced.
+5. **DSi mode.** DSP HLE now accesses DSP memory through `le_u16` (compiles in
+   all three configurations) but has never been run, and DSi mode needs real
+   DSi BIOS/NAND files that this frontend doesn't load yet.
 6. **Savestates** store host-order data and aren't portable to PC.
 7. **No host-directory sync.** `FATStorage` builds without `<filesystem>` here,
    so the homebrew SD-card "sync a host folder" feature is stubbed out.

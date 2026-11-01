@@ -126,6 +126,15 @@ bool EmuCore::BootWithoutCart(std::string& error)
     return true;
 }
 
+int EmuCore::ReadAudio(s16* out, int maxFrames)
+{
+    if (!Console || maxFrames <= 0) return 0;
+
+    int avail = Console->SPU.GetOutputSize();
+    if (avail > maxFrames) avail = maxFrames;
+    return (avail > 0) ? Console->SPU.ReadOutput(out, avail) : 0;
+}
+
 bool EmuCore::RunFrame(u32 pressedKeys, bool touching, int touchX, int touchY)
 {
     if (!Console || Ctx_.StopRequested)

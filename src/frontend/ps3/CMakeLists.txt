@@ -20,3 +20,7 @@ endif()
 
 target_include_directories(melonds-ps3-headless PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(melonds-ps3-headless PRIVATE core)
+
+# Unit test for the audio ring buffer (pure C++, no PS3 or core dependencies).
+add_executable(ps3-audio-ring-test AudioRing_test.cpp)
+target_include_directories(ps3-audio-ring-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../..)

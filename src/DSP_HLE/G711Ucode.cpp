@@ -89,7 +89,7 @@ void G711Ucode::TryStartCmd()
     // try to start executing this command
     // we can run as soon as we have received 8 words in pipe 7
 
-    u16* pipe = LoadPipe(7);
+    le_u16* pipe = LoadPipe(7);
     u32 pipelen = GetPipeLength(pipe);
     if (pipelen < 8) return;
 
@@ -142,7 +142,7 @@ void G711Ucode::FinishCmd(u32 param)
     }
 
     // response = processed length (even for invalid cmd type)
-    u16* pipe = LoadPipe(6);
+    le_u16* pipe = LoadPipe(6);
     u16 resp[2] = {CmdParams[6], CmdParams[7]};
     WritePipe(pipe, resp, 2);
 

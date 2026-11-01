@@ -55,6 +55,10 @@ public:
     const u32* TopScreen() const { return Top; }
     const u32* BottomScreen() const { return Bottom; }
 
+    // Copies up to maxFrames of pending audio (interleaved s16 stereo,
+    // 48 kHz) into out. Returns the number of frames copied.
+    int ReadAudio(s16* out, int maxFrames);
+
     Context& Ctx() { return Ctx_; }
 
 private:

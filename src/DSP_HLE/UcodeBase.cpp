@@ -208,7 +208,7 @@ void UcodeBase::OnReplyRead(u8 index)
         case 2:
             {
                 // response to "play sound" command
-                u16* pipe = LoadPipe(4);
+                le_u16* pipe = LoadPipe(4);
                 u32 outlen = ReplyReadCbParam[2];
                 u16 resp[4] = {0x0000, 0x1200, (u16)(outlen >> 16), (u16)(outlen & 0xFFFF)};
                 WritePipe(pipe, resp, 4);
@@ -218,7 +218,7 @@ void UcodeBase::OnReplyRead(u8 index)
         case 3:
             {
                 // response to mic commands
-                u16* rpipe = LoadPipe(4);
+                le_u16* rpipe = LoadPipe(4);
                 u32 cmd = ReplyReadCbParam[2];
                 u16 resp[4] = {(u16)(cmd >> 16), (u16)(cmd & 0xFFFF),
                                (u16)(kMicBufferAddr >> 16), (u16)(kMicBufferAddr & 0xFFFF)};
@@ -342,10 +342,10 @@ void UcodeBase::SetSemaphoreOut(u16 val)
 }
 
 
-u16* UcodeBase::GetDataMemPointer(u32 addr)
+le_u16* UcodeBase::GetDataMemPointer(u32 addr)
 {
     // pointer only valid within 32K page
-    u16* mem = (u16*)DSi.NWRAMMap_C[2][(addr >> 14) & 0x7];
+    le_u16* mem = (le_u16*)DSi.NWRAMMap_C[2][(addr >> 14) & 0x7];
     return &mem[addr & 0x3FFF];
 }
 
@@ -353,7 +353,7 @@ u16* UcodeBase::GetDataMemPointer(u32 addr)
 void UcodeBase::Start()
 {
     // initialize pipe structure
-    u16* pipe = GetDataMemPointer(kPipeMonitorAddr);
+    le_u16* pipe = GetDataMemPointer(kPipeMonitorAddr);
     for (int i = 0; i < 16; i++)
     {
         *pipe++ = kPipeBufferAddr + (0x100 * i);    // buffer address
@@ -370,12 +370,12 @@ void UcodeBase::Start()
 }
 
 
-u16* UcodeBase::LoadPipe(u8 index)
+le_u16* UcodeBase::LoadPipe(u8 index)
 {
     return GetDataMemPointer(kPipeMonitorAddr + (index * 5));
 }
 
-u32 UcodeBase::GetPipeLength(u16* pipe)
+u32 UcodeBase::GetPipeLength(le_u16* pipe)
 {
     u32 ret;
     u16 rdptr = pipe[2] & 0x7FFF;
@@ -394,9 +394,9 @@ u32 UcodeBase::GetPipeLength(u16* pipe)
     return ret >> 1;
 }
 
-u32 UcodeBase::ReadPipe(u16* pipe, u16* data, u32 len)
+u32 UcodeBase::ReadPipe(le_u16* pipe, u16* data, u32 len)
 {
-    u16* pipebuf = GetDataMemPointer(pipe[0]);
+    le_u16* pipebuf = GetDataMemPointer(pipe[0]);
     u16 pipelen = pipe[1] >> 1;
     u16 rdptr = (pipe[2] & 0x7FFF) >> 1;
     u16 rdphase = pipe[2] & 0x8000;
@@ -422,9 +422,9 @@ u32 UcodeBase::ReadPipe(u16* pipe, u16* data, u32 len)
     return rdlen;
 }
 
-u32 UcodeBase::WritePipe(u16* pipe, const u16* data, u32 len)
+u32 UcodeBase::WritePipe(le_u16* pipe, const u16* data, u32 len)
 {
-    u16* pipebuf = GetDataMemPointer(pipe[0]);
+    le_u16* pipebuf = GetDataMemPointer(pipe[0]);
     u16 pipelen = pipe[1] >> 1;
     u16 rdptr = (pipe[2] & 0x7FFF) >> 1;
     u16 wrptr = (pipe[3] & 0x7FFF) >> 1;
@@ -442,7 +442,7 @@ u32 UcodeBase::WritePipe(u16* pipe, const u16* data, u32 len)
         }
         if (wrptr == rdptr)
         {
-            Log(LogLevel::Error, "DSP_HLE: PIPE %d IS FULL!!\n", pipe[4]);
+            Log(LogLevel::Error, "DSP_HLE: PIPE %d IS FULL!!\n", (int)(u16)pipe[4]);
             break;
         }
     }
@@ -459,7 +459,7 @@ u32 UcodeBase::WritePipe(u16* pipe, const u16* data, u32 len)
 // by providing a way to read/write blocks of memory in NDS
 // rather than having to decode the address for every word
 
-void UcodeBase::ReadARM9Mem(u16* mem, u32 addr, u32 len)
+void UcodeBase::ReadARM9Mem(le_u16* mem, u32 addr, u32 len)
 {
     if (addr & 2)
     {
@@ -482,7 +482,7 @@ void UcodeBase::ReadARM9Mem(u16* mem, u32 addr, u32 len)
     }
 }
 
-void UcodeBase::WriteARM9Mem(const u16* mem, u32 addr, u32 len)
+void UcodeBase::WriteARM9Mem(const le_u16* mem, u32 addr, u32 len)
 {
     if (addr & 2)
     {
@@ -508,7 +508,7 @@ void UcodeBase::WriteARM9Mem(const u16* mem, u32 addr, u32 len)
 
 void UcodeBase::TryStartAudioCmd()
 {
-    u16* pipe = LoadPipe(5);
+    le_u16* pipe = LoadPipe(5);
     u32 pipelen = GetPipeLength(pipe);
     if (pipelen < 8) return;
 
@@ -553,7 +553,7 @@ void UcodeBase::TryStartAudioCmd()
         if ((cmdaction == 1) || (cmdaction == 2))
         {
             // initialize mic buffer
-            u16* micbuf = GetDataMemPointer(kMicBufferAddr);
+            le_u16* micbuf = GetDataMemPointer(kMicBufferAddr);
             *micbuf++ = kMicBufferAddr + 3; // pointer to mic buffer
             *micbuf++ = 0x1000;             // buffer length
             *micbuf++ = 0;                  // write pointer
@@ -599,10 +599,10 @@ void UcodeBase::AudioOutAdvance()
 
 void UcodeBase::MicInAdvance()
 {
-    u16* micbuf = GetDataMemPointer(kMicBufferAddr);
+    le_u16* micbuf = GetDataMemPointer(kMicBufferAddr);
     u16 buflen = micbuf[1];
     u16 wrpos = micbuf[2];
-    u16* micdata = &micbuf[3];
+    le_u16* micdata = &micbuf[3];
 
     while (!MicInFIFO.IsEmpty())
     {

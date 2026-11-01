@@ -1,13 +1,14 @@
 // melonDS PS3 frontend entry point.
 //
-// UNVERIFIED: never compiled for the PS3 (see README.md). The emulation side
-// (EmuCore, Platform_PS3, Sync_single) is built and run on the host by the
-// headless runner; only the code in Video_PS3.cpp, Input_PS3.cpp and this file
-// is PS3-specific.
+// UNVERIFIED: compiles and links with the PS3 toolchain but has never been run
+// (see README.md). The emulation side (EmuCore, Platform_PS3, Sync_single) is
+// also built and run on the host by the headless runner; the PS3-specific
+// code is Video_PS3.cpp, Input_PS3.cpp, Audio_PS3.cpp, rsxutil.* and this file.
 
 #include <stdio.h>
 #include <string>
 
+#include "Audio.h"
 #include "EmuCore.h"
 #include "FrontendContext.h"
 #include "Input.h"
@@ -37,6 +38,9 @@ int main(int argc, char** argv)
 
     if (!Video::Init())
         return 1;
+    // Audio is optional: if it fails the emulator runs silently.
+    const bool haveAudio = Audio::Init();
+
     if (!Input::Init())
     {
         ReportError(dataDir, "Could not initialize controller input.");
@@ -57,8 +61,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    // Single-threaded loop: emulate one frame, draw it, and let Present's
-    // vsync wait hold us at 60 Hz. TODO: audio output.
+    // Single-threaded loop: emulate one frame, queue its audio, draw it, and
+    // let Present's vsync wait hold us at 60 Hz.
+    static s16 audioBuf[4096 * 2];
     while (true)
     {
         Input::State in = Input::Poll();
@@ -68,9 +73,17 @@ int main(int argc, char** argv)
         if (!core.RunFrame(in.Keys, in.Touching, in.TouchX, in.TouchY))
             break;
 
+        if (haveAudio)
+        {
+            int n = core.ReadAudio(audioBuf, 4096);
+            if (n > 0) Audio::Submit(audioBuf, n);
+            Audio::Service();
+        }
+
         Video::Present(core.TopScreen(), core.BottomScreen());
     }
 
+    Audio::Shutdown();
     Input::Shutdown();
     Video::Shutdown();
     return 0;

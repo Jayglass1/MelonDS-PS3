@@ -38,7 +38,7 @@ CORE_C := \
 
 # Frontend: shared code plus the single-threaded sync backend and PS3 pieces.
 # rsxutil.c/.h are this directory's own minimal display helper.
-FRONT_CPP := main_ps3 EmuCore Platform_PS3 Sync_single Video_PS3 Input_PS3
+FRONT_CPP := main_ps3 EmuCore Platform_PS3 Sync_single Video_PS3 Input_PS3 Audio_PS3
 FRONT_C   := rsxutil
 
 OBJS := \
@@ -54,7 +54,7 @@ CXXCOMPAT := -include compat.h
 CXXFLAGS := $(COMMON) $(CXXCOMPAT) -std=gnu++17 -Wno-invalid-offsetof
 CFLAGS := $(COMMON)
 
-LIBS := -L$(PSL1GHT)/ppu/lib -lrsx -lgcm_sys -lio -lsysutil -lrt -llv2 -lm
+LIBS := -L$(PSL1GHT)/ppu/lib -laudio -lrsx -lgcm_sys -lio -lsysutil -lrt -llv2 -lm
 
 .PHONY: all clean
 all: $(TARGET).self
