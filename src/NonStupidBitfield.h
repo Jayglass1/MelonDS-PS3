@@ -21,7 +21,7 @@
 
 #include "types.h"
 
-#include <memory.h>
+#include <string.h>
 
 #include <initializer_list>
 #include <algorithm>

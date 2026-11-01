@@ -23,7 +23,28 @@
 #include <string>
 #include <map>
 #include <optional>
+// Some platforms (e.g. the PS3 toolchain) have no <filesystem>. Without it,
+// syncing a host directory with the FAT image is unavailable; image files
+// still work.
+#if defined(__has_include)
+#if !__has_include(<filesystem>)
+#define MELONDS_NO_FILESYSTEM 1
+#endif
+#endif
+
+#ifndef MELONDS_NO_FILESYSTEM
 #include <filesystem>
+#endif
+#include <string>
+
+namespace melonDS
+{
+#ifdef MELONDS_NO_FILESYSTEM
+using HostPath = std::string;
+#else
+using HostPath = std::filesystem::path;
+#endif
+}
 
 #include "Platform.h"
 #include "types.h"
@@ -86,7 +107,7 @@ private:
     void LoadIndex();
     void SaveIndex();
 
-    bool ExportFile(const std::string& path, std::filesystem::path out);
+    bool ExportFile(const std::string& path, HostPath out);
     void ExportDirectory(const std::string& path, const std::string& outbase, int level);
     bool DeleteHostDirectory(const std::string& path, const std::string& outbase, int level);
     void ExportChanges(const std::string& outbase);
@@ -94,9 +115,9 @@ private:
     bool CanFitFile(u32 len);
     bool DeleteDirectory(const std::string& path, int level);
     void CleanupDirectory(const std::string& sourcedir, const std::string& path, int level);
-    bool ImportFile(const std::string& path, std::filesystem::path in);
+    bool ImportFile(const std::string& path, HostPath in);
     bool ImportDirectory(const std::string& sourcedir);
-    u64 GetDirectorySize(std::filesystem::path sourcedir) const;
+    u64 GetDirectorySize(HostPath sourcedir) const;
 
     bool Load(const std::string& filename, u64 size, const std::optional<std::string>& sourcedir);
     bool Save();

@@ -32,6 +32,18 @@ A million repetitions of "a"
 #endif
 #include "sha1.h"
 
+#if !defined(BYTE_ORDER) && defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__)
+/* compilers that predefine the byte order (GCC, Clang), e.g. for the PS3 */
+#define LITTLE_ENDIAN 1234
+#define BIG_ENDIAN 4321
+#define PDP_ENDIAN 3412
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define BYTE_ORDER BIG_ENDIAN
+#else
+#define BYTE_ORDER LITTLE_ENDIAN
+#endif
+#endif
+
 #ifndef BYTE_ORDER
 #if (BSD >= 199103)
 # include <machine/endian.h>

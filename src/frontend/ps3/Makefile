@@ -37,7 +37,7 @@ CORE_C := \
 	tiny-AES-c/aes xxhash/xxhash
 
 # Frontend: shared code plus the single-threaded sync backend and PS3 pieces.
-# rsxutil.c comes from the PSL1GHT samples; copy it (and rsxutil.h) here.
+# rsxutil.c/.h are this directory's own minimal display helper.
 FRONT_CPP := main_ps3 EmuCore Platform_PS3 Sync_single Video_PS3 Input_PS3
 FRONT_C   := rsxutil
 
@@ -49,7 +49,9 @@ INCLUDES := -I. -Igen -I$(SRC) -I$(SRC)/teakra/include -I$(SRC)/teakra/src \
 	-I$(PSL1GHT)/ppu/include -I$(PORTLIBS)/include
 
 COMMON := -mcpu=cell -O3 -fwrapv -DMELONDS_PS3=1 $(INCLUDES)
-CXXFLAGS := $(COMMON) -std=gnu++17 -Wno-invalid-offsetof
+# std::mutex / std::to_string stand-ins (see compat.h); C++ only
+CXXCOMPAT := -include compat.h
+CXXFLAGS := $(COMMON) $(CXXCOMPAT) -std=gnu++17 -Wno-invalid-offsetof
 CFLAGS := $(COMMON)
 
 LIBS := -L$(PSL1GHT)/ppu/lib -lrsx -lgcm_sys -lio -lsysutil -lrt -llv2 -lm

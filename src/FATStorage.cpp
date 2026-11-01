@@ -27,9 +27,19 @@
 
 namespace melonDS
 {
+#ifndef MELONDS_NO_FILESYSTEM
 namespace fs = std::filesystem;
+#endif
 using namespace Platform;
 using std::string;
+
+#ifdef MELONDS_NO_FILESYSTEM
+static HostPath MakeHostPath(const std::string& s) { return s; }
+static bool IsHostDirectory(const std::string&) { return false; }
+#else
+static HostPath MakeHostPath(const std::string& s) { return fs::u8path(s); }
+static bool IsHostDirectory(const std::string& s) { return fs::is_directory(fs::u8path(s)); }
+#endif
 
 FATStorage::FATStorage(const std::string& filename, u64 size, bool readonly, const std::optional<string>& sourcedir) :
     FATStorage(FATStorageArgs { filename, size, readonly, sourcedir })
@@ -412,6 +422,7 @@ void FATStorage::SaveIndex()
 }
 
 
+#ifndef MELONDS_NO_FILESYSTEM
 bool FATStorage::ExportFile(const std::string& path, fs::path out)
 {
     FF_FIL file;
@@ -702,6 +713,12 @@ void FATStorage::ExportChanges(const std::string& outbase)
 
     ExportDirectory("", outbase, 0);
 }
+#else // MELONDS_NO_FILESYSTEM: no host directory syncing
+bool FATStorage::ExportFile(const std::string&, HostPath) { return false; }
+void FATStorage::ExportDirectory(const std::string&, const std::string&, int) {}
+bool FATStorage::DeleteHostDirectory(const std::string&, const std::string&, int) { return false; }
+void FATStorage::ExportChanges(const std::string&) {}
+#endif
 
 
 bool FATStorage::CanFitFile(u32 len)
@@ -777,6 +794,7 @@ bool FATStorage::DeleteDirectory(const std::string& path, int level)
     return true;
 }
 
+#ifndef MELONDS_NO_FILESYSTEM
 void FATStorage::CleanupDirectory(const std::string& sourcedir, const std::string& path, int level)
 {
     if (level >= 32) return;
@@ -1003,12 +1021,19 @@ u64 FATStorage::GetDirectorySize(fs::path sourcedir) const
     return ret;
 }
 
+#else // MELONDS_NO_FILESYSTEM: no host directory syncing
+void FATStorage::CleanupDirectory(const std::string&, const std::string&, int) {}
+bool FATStorage::ImportFile(const std::string&, HostPath) { return false; }
+bool FATStorage::ImportDirectory(const std::string&) { return false; }
+u64 FATStorage::GetDirectorySize(HostPath) const { return 0; }
+#endif
+
 bool FATStorage::Load(const std::string& filename, u64 size, const std::optional<string>& sourcedir)
 {
     bool hasdir = sourcedir && !sourcedir->empty();
     if (sourcedir)
     {
-        if (!fs::is_directory(fs::u8path(*sourcedir)))
+        if (!IsHostDirectory(*sourcedir))
         {
             hasdir = false;
             SourceDir = std::nullopt;
@@ -1073,7 +1098,7 @@ bool FATStorage::Load(const std::string& filename, u64 size, const std::optional
         {
             if (hasdir)
             {
-                FileSize = GetDirectorySize(fs::u8path(*sourcedir));
+                FileSize = GetDirectorySize(MakeHostPath(*sourcedir));
                 FileSize += 0x8000000ULL; // 128MB leeway
 
                 // make it a power of two
