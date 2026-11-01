@@ -61,9 +61,15 @@ This produces `melonds-ps3.pkg` (debug type: RPCS3, debug firmware) and
   lists it or compares it with the source files.
 - **Verified:** `make pkg` from a clean tree succeeds; the package decrypts back
   to exactly the staged files; `package_finalize` runs and flips the type from
-  `0x1` to `0x80000001`. **Not verified:** installing it anywhere. The check uses
-  the same cipher code in both directions, so it proves the format is
-  self-consistent, not that a console or RPCS3 accepts it. `ps3pkg.py` was not
+  `0x1` to `0x80000001`. The decrypt check uses the same cipher code in both
+  directions, but there is also an independent one: `package_finalize` (the
+  original ps3dev tool) has to decrypt the debug-encrypted data to re-encrypt
+  it, and decrypting its output with AES-128-CTR (the well-known retail pkg
+  key, IV at header offset 0x70) gives back exactly the plaintext this tool
+  produced. So the cipher, key derivation and file-table layout agree with the
+  original tools. **Not verified:** installing the package anywhere. A console
+  or RPCS3 can still reject it for reasons this does not cover (PARAM.SFO,
+  header metadata fields, the signed EBOOT, firmware requirements). `ps3pkg.py` was not
   compared byte-for-byte against the original Python 2 `pkg.py` (no Python 2
   here). Where that file is concerned, the signed EBOOT is packaged as-is, as
   `pkg.py` does for signed SELFs.
