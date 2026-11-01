@@ -59,6 +59,13 @@ LIBS := -L$(PSL1GHT)/ppu/lib -laudio -lrsx -lgcm_sys -lio -lsysutil -lrt -llv2 -
 .PHONY: all clean
 all: $(TARGET).self
 
+# Fake-sign with fself (ships with ps3dev). The stock "%.self" rule from
+# ppu_rules calls make_self, which needs libcrypto.so.1.1. A fake-signed SELF
+# runs on custom firmware and in RPCS3, not on stock firmware.
+FSELF ?= fself
+$(TARGET).self: $(TARGET).elf
+	$(FSELF) $< $@
+
 $(TARGET).elf: $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LIBS)
 

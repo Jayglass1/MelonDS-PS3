@@ -12,8 +12,12 @@ With the ps3dev toolchain (GCC 7.2.0, `ps3dev-ubuntu-latest-2020-08-31`):
 - All source files (core, teakra, frontend) compile and `melonds-ps3.elf` links.
   The only compiler warning is a `-Wstringop-overflow` in upstream's
   `VRAMTrackingSet::DeriveState` (GPU VRAM dirty tracking). It is probably a
-  GCC 7.2 false positive, but that has not been confirmed. The ELF is: a 64-bit big-endian PowerPC executable
-  (~4.2 MB text, 160 KB data).
+  GCC 7.2 false positive, but that has not been confirmed.
+- The result is a 64-bit big-endian PowerPC executable (~4.2 MB text,
+  160 KB data).
+- `fself` (ships with ps3dev) wraps the ELF into a fake-signed `.self`: valid
+  `SCE` header, SELF category, ELF embedded byte-for-byte. `make_self` is not
+  used because it needs `libcrypto.so.1.1`.
 - The compiler detects the PPU as big-endian and selects the byte-swapping
   `le_*` types (`static_assert` check).
 - A wrapper-mode build with format warnings on shows no `le_*` value passed
@@ -33,8 +37,8 @@ On x86 (sandbox):
   backends.
 
 **Not checked:** running anything on big-endian hardware or an emulator; running
-any game (no ROM was available); the `.self` signing step (`make_self` needs
-`libcrypto.so.1.1`, which the sandbox lacks, so no `.self` was produced).
+any game (no ROM was available); whether the `.self` actually loads. It is
+fake-signed, so it needs custom firmware or RPCS3; stock firmware will refuse it.
 
 ## Layout
 
@@ -49,7 +53,7 @@ any game (no ROM was available); the `.self` signing step (`make_self` needs
 | `AudioRing.h` (+ `AudioRing_test.cpp`) | Audio ring buffer and block-scheduling policy | unit-tested on host (ASan/UBSan) |
 | `Audio_PS3.cpp` | Writes float blocks into the PS3 audio port | compiles and links; **never run** |
 | `compat.h` | std::mutex / to_string / snprintf stand-ins for the PS3 libstdc++ | compiles |
-| `Makefile` | PS3 build (`make` with PS3DEV/PSL1GHT set) | builds the ELF; `.self` step untested |
+| `Makefile` | PS3 build (`make` with PS3DEV/PSL1GHT set) | builds the ELF and a fake-signed `.self` (`fself`) |
 
 Host runner:
 
