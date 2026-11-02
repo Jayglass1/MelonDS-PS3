@@ -16,7 +16,12 @@ With the ps3dev toolchain (GCC 7.2.0, `ps3dev-ubuntu-latest-2020-08-31`):
 - The result is a 64-bit big-endian PowerPC executable (~4.2 MB text,
   160 KB data).
 - `fself` (ships with ps3dev) wraps the ELF into a fake-signed `.self`: valid
-  `SCE` header, SELF category, ELF embedded byte-for-byte. `make_self` is not
+  `SCE` header, SELF category, ELF embedded byte-for-byte. Both the `.self` and
+  the packages are made from the *stripped, `sprxlinker`-processed* copy of the
+  ELF (`build/melonds-ps3.linked.elf`), exactly as ps3dev's `ppu_rules` does.
+  The first packages skipped that step and could not start on a console: the
+  loader cannot resolve the system-library imports without it (it also sets
+  the Cell OS/ABI byte, 0x66). `make_self` is not
   used because it needs `libcrypto.so.1.1`.
 - The compiler detects the PPU as big-endian and selects the byte-swapping
   `le_*` types (`static_assert` check).

@@ -66,6 +66,7 @@ all: $(TARGET).self
 # libcrypto.so.1.1, run tools/build-shim.sh and then
 #   LD_LIBRARY_PATH=$PWD/tools make pkg
 # PARAM.SFO and the package itself are made by tools/ps3pkg.py (Python 3).
+LINKED_ELF := $(BUILD)/$(TARGET).linked.elf
 TITLE := melonDS PS3
 APPID := MELONDS00
 PS3PKG ?= python3 tools/ps3pkg.py
@@ -73,7 +74,7 @@ PKGDIR := $(BUILD)/pkg
 
 pkg: $(TARGET).gnpdrm.pkg
 
-$(TARGET).pkg: $(TARGET).elf
+$(TARGET).pkg: $(LINKED_ELF)
 	rm -rf $(PKGDIR)
 	mkdir -p $(PKGDIR)/USRDIR
 	cp $(ICON0) $(PKGDIR)/ICON0.PNG
@@ -89,8 +90,18 @@ $(TARGET).gnpdrm.pkg: $(TARGET).pkg
 # ppu_rules calls make_self, which needs libcrypto.so.1.1. A fake-signed SELF
 # runs on custom firmware and in RPCS3, not on stock firmware.
 FSELF ?= fself
-$(TARGET).self: $(TARGET).elf
+$(TARGET).self: $(LINKED_ELF)
 	$(FSELF) $< $@
+
+# The step that was missing at first: ppu_rules never signs the raw linker
+# output. It strips a copy and runs sprxlinker on it, which rewrites the
+# system-library (sysutil, io, audio, ...) imports into the form the loader
+# needs (and sets the Cell OS/ABI byte). Without this the console starts the
+# program, cannot resolve its imports, and drops straight back to the XMB.
+$(LINKED_ELF): $(TARGET).elf
+	@mkdir -p $(BUILD)
+	$(STRIP) $< -o $@
+	$(SPRX) $@
 
 $(TARGET).elf: $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LIBS)
