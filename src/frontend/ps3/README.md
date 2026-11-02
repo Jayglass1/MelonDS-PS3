@@ -71,8 +71,8 @@ This produces `melonds-ps3.pkg` (debug type: RPCS3, debug firmware) and
   or RPCS3 can still reject it for reasons this does not cover (PARAM.SFO,
   header metadata fields, the signed EBOOT, firmware requirements). `ps3pkg.py` was not
   compared byte-for-byte against the original Python 2 `pkg.py` (no Python 2
-  here). Where that file is concerned, the signed EBOOT is packaged as-is, as
-  `pkg.py` does for signed SELFs.
+  here). Like `pkg.py`, it rewrites the 0x80-byte NPDRM meta block of an app-type-8
+  SELF (content ID, file SHA-1 and derived hashes) as it packs the EBOOT.
 
 ## If it drops straight back to the XMB
 
