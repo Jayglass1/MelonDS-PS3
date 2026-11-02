@@ -60,6 +60,7 @@ bool Init()
     }
 
     int rc = init_screen(HostBuffer, HostBufferSize);
+    Log("Video: init_screen returned %d (videoState.state = %d)", rc, video_state_value);
     if (rc != 0)
     {
         // -1 rsxInit, -2 videoGetState/not enabled, -3 videoGetResolution,

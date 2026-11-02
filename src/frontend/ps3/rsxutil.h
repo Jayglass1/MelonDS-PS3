@@ -24,6 +24,7 @@ typedef struct
 
 extern gcmContextData* context;
 extern int currentBuffer;
+extern int video_state_value;   // videoState.state as reported by the firmware (for the log)
 extern rsxBuffer buffers[MAX_BUFFERS];
 
 // host_addr must be a 1 MB-aligned block of host_size bytes (command buffer

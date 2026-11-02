@@ -10,6 +10,7 @@
 
 gcmContextData* context = NULL;
 int currentBuffer = 0;
+int video_state_value = -1;
 rsxBuffer buffers[MAX_BUFFERS];
 
 static uint32_t Width = 0;
@@ -22,8 +23,13 @@ int init_screen(void* host_addr, uint32_t host_size)
         return -1;
 
     videoState state;
-    if (videoGetState(VIDEO_PRIMARY, 0, &state) != 0 || state.state != VIDEO_STATE_ENABLED)
+    if (videoGetState(VIDEO_PRIMARY, 0, &state) != 0)
         return -2;
+    // The firmware reports an enabled display as 0 (the PSL1GHT samples test
+    // "state.state != 0"), while this header's VIDEO_STATE_ENABLED is 1, so the
+    // value is recorded for the log and not used as a gate. A really absent or
+    // unusable display still fails in videoGetResolution/videoConfigure below.
+    video_state_value = (int)state.state;
 
     videoResolution res;
     if (videoGetResolution(state.displayMode.resolution, &res) != 0)
