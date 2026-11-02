@@ -74,6 +74,22 @@ This produces `melonds-ps3.pkg` (debug type: RPCS3, debug firmware) and
   here). Where that file is concerned, the signed EBOOT is packaged as-is, as
   `pkg.py` does for signed SELFs.
 
+## If it drops straight back to the XMB
+
+The app writes a stage-by-stage log (one line per step, file closed after each
+line, so it survives a crash):
+
+- `/dev_hdd0/game/MELONDS00/USRDIR/log.txt`
+- `/dev_hdd0/tmp/melonds-ps3-log.txt`
+
+The last line is the last step that completed. No log file at all means the
+loader never reached `main` (SELF rejected, or a crash during static
+initialisation). Video setup failures log the `init_screen` code (-1 rsxInit,
+-2 video state, -3 resolution, -4 videoConfigure, -5 state, -6 rsxMemalign,
+-7 address-to-offset, -8 gcmSetDisplayBuffer). A missing ROM does *not* exit:
+it shows a black screen and writes `error.txt`. Put the ROM at
+`/dev_hdd0/game/MELONDS00/USRDIR/rom.nds`.
+
 ## Layout
 
 | File | Role | Verified |

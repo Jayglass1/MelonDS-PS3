@@ -25,6 +25,7 @@ extern "C" {
 }
 
 #include "EmuCore.h"
+#include "Log.h"
 #include "Video.h"
 
 namespace melonDS::PS3Frontend::Video
@@ -32,7 +33,7 @@ namespace melonDS::PS3Frontend::Video
 
 namespace
 {
-constexpr u32 HostBufferSize = 1024 * 1024; // command buffer memory for the RSX
+constexpr u32 HostBufferSize = 32 * 1024 * 1024; // RSX IO mapping (command buffer is 1 MB of it); size used by the PSL1GHT samples
 void* HostBuffer = nullptr;
 
 void BlitScreen(const rsxBuffer& buf, const u32* src, int x0, int y0)
@@ -53,9 +54,22 @@ bool Init()
 {
     HostBuffer = memalign(1024 * 1024, HostBufferSize);
     if (!HostBuffer)
+    {
+        Log("Video: memalign of %u bytes failed", (unsigned)HostBufferSize);
         return false;
+    }
 
-    init_screen(HostBuffer, HostBufferSize);
+    int rc = init_screen(HostBuffer, HostBufferSize);
+    if (rc != 0)
+    {
+        // -1 rsxInit, -2 videoGetState/not enabled, -3 videoGetResolution,
+        // -4 videoConfigure, -5 videoGetState, -6 rsxMemalign,
+        // -7 rsxAddressToOffset, -8 gcmSetDisplayBuffer
+        Log("Video: init_screen failed with code %d", rc);
+        return false;
+    }
+
+    Log("Video: ready, %ux%u framebuffers", (unsigned)buffers[0].width, (unsigned)buffers[0].height);
     return true;
 }
 

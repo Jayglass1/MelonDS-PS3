@@ -15,6 +15,7 @@
 
 #include "EmuCore.h"
 #include "Input.h"
+#include "Log.h"
 
 namespace melonDS::PS3Frontend::Input
 {
@@ -42,7 +43,10 @@ int Clamp(int v, int lo, int hi)
 bool Init()
 {
     sysUtilRegisterCallback(0, SysutilCallback, nullptr);
-    return ioPadInit(7) == 0;
+    int rc = ioPadInit(7);
+    if (rc != 0)
+        Log("Input: ioPadInit failed with %d", rc);
+    return rc == 0;
 }
 
 State Poll()
