@@ -40,6 +40,7 @@ static void ReportError(const std::string& dir, const std::string& message)
 static int ReadFrameSkip(const std::string& dir)
 {
     FILE* f = fopen((dir + "frameskip").c_str(), "r");
+    if (!f) f = fopen((dir + "frameskip.txt").c_str(), "r"); // PC editors add .txt
     if (!f) return 0;
     int n = 0;
     if (fscanf(f, "%d", &n) != 1) n = 1; // empty file = skip 1
