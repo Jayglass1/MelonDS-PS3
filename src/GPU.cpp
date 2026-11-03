@@ -1134,16 +1134,20 @@ void GPU::StartFrame() noexcept
     // * if we have display FIFO DMA
     RunFIFO = UsesDisplayFIFO() || NDS.DMAsInMode(0, 0x04);
 
+    // The 3D renderer works one frame ahead: it is started at line 215 of
+    // frame N and consumed while drawing frame N+1. So the skip decision for
+    // frame N+1 is made here, one frame early, and both ends use the same flag.
+    SkipThisFrame = SkipNextFrame;
     if (FrameSkip > 0 && !(CaptureCnt & (1u<<31)))
     {
         SkipCounter++;
         if (SkipCounter > FrameSkip) SkipCounter = 0;
-        SkipThisFrame = (SkipCounter != 0);
+        SkipNextFrame = (SkipCounter != 0);
     }
     else
     {
         SkipCounter = 0;
-        SkipThisFrame = false;
+        SkipNextFrame = false;
     }
 
     TotalScanlines = 0;
@@ -1177,7 +1181,7 @@ void GPU::StartHBlank(u32 line) noexcept
     }
     else if (VCount == 215)
     {
-        if (!SkipThisFrame) Rend->Start3DRendering();
+        if (!SkipNextFrame) Rend->Start3DRendering();
     }
     else if (VCount == 262)
     {
@@ -1205,7 +1209,7 @@ void GPU::FinishFrame(u32 lines) noexcept
 
     if (GPU3D.AbortFrame)
     {
-        if (!SkipThisFrame) Rend->Restart3DRendering();
+        if (!SkipNextFrame) Rend->Restart3DRendering();
         GPU3D.AbortFrame = false;
     }
 }

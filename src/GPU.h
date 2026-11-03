@@ -623,6 +623,7 @@ public:
     int FrameSkip = 0;
     int SkipCounter = 0;
     bool SkipThisFrame = false;
+    bool SkipNextFrame = false; // 3D for frame N+1 is started during frame N
 
     u16 VCount = 0;
     u16 TotalScanlines = 0;

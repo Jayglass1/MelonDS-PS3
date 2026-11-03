@@ -59,6 +59,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    if (const char* fs = getenv("FRAMESKIP")) core.SetFrameSkip(atoi(fs));
     int ran = 0;
     for (int i = 0; i < frames; i++)
     {
