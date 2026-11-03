@@ -618,6 +618,12 @@ public:
     bool ScreensEnabled = false;
     bool ScreenSwap = false;
 
+    // Frontend frame skipping: render 1 of every (FrameSkip+1) frames. Not part
+    // of the console state. Frames with display capture active are never skipped.
+    int FrameSkip = 0;
+    int SkipCounter = 0;
+    bool SkipThisFrame = false;
+
     u16 VCount = 0;
     u16 TotalScanlines = 0;
     u16 DispStat[2] {};

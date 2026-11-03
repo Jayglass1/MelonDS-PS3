@@ -1134,6 +1134,18 @@ void GPU::StartFrame() noexcept
     // * if we have display FIFO DMA
     RunFIFO = UsesDisplayFIFO() || NDS.DMAsInMode(0, 0x04);
 
+    if (FrameSkip > 0 && !(CaptureCnt & (1u<<31)))
+    {
+        SkipCounter++;
+        if (SkipCounter > FrameSkip) SkipCounter = 0;
+        SkipThisFrame = (SkipCounter != 0);
+    }
+    else
+    {
+        SkipCounter = 0;
+        SkipThisFrame = false;
+    }
+
     TotalScanlines = 0;
     StartScanline(0);
 }
@@ -1153,16 +1165,19 @@ void GPU::StartHBlank(u32 line) noexcept
     {
         // draw
         // note: this should start 48 cycles after the scanline start
-        if (line < 192)
-            Rend->DrawScanline(line);
-        if (line < 191)
-            Rend->DrawSprites(line+1);
+        if (!SkipThisFrame)
+        {
+            if (line < 192)
+                Rend->DrawScanline(line);
+            if (line < 191)
+                Rend->DrawSprites(line+1);
+        }
 
         NDS.CheckDMAs(0, 0x02);
     }
     else if (VCount == 215)
     {
-        Rend->Start3DRendering();
+        if (!SkipThisFrame) Rend->Start3DRendering();
     }
     else if (VCount == 262)
     {
@@ -1184,13 +1199,13 @@ void GPU::StartHBlank(u32 line) noexcept
 
 void GPU::FinishFrame(u32 lines) noexcept
 {
-    Rend->SwapBuffers();
+    if (!SkipThisFrame) Rend->SwapBuffers();
 
     TotalScanlines = lines;
 
     if (GPU3D.AbortFrame)
     {
-        Rend->Restart3DRendering();
+        if (!SkipThisFrame) Rend->Restart3DRendering();
         GPU3D.AbortFrame = false;
     }
 }
@@ -1286,7 +1301,7 @@ void GPU::StartScanline(u32 line) noexcept
         // texture memory anyway and only update it before the start
         // of the next frame.
         // So we can give the rasteriser a bit more headroom
-        Rend->Finish3DRendering();
+        if (!SkipThisFrame) Rend->Finish3DRendering();
 
         DispStat[0] |= (1<<0);
         DispStat[1] |= (1<<0);

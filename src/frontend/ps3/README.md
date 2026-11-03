@@ -151,3 +151,15 @@ Right stick moves the touch cursor, R3 taps it. Start+Select+L1+R1 quits.
 
 ROM path: `/dev_hdd0/game/MELONDS00/USRDIR/rom.nds` (or the first argument).
 The save is written next to the ROM as `rom.sav`.
+
+## Speed readout and frame skipping
+
+Every 120 frames the log gets a line such as
+`perf: 9.4 fps | per frame us: emu 98000 audio 300 present 8000 | skip 0`
+(emulation time, audio time, and time waiting in Present/vsync).
+
+To skip frames, create a file `frameskip` in `/dev_hdd0/game/MELONDS00/USRDIR/`
+containing a number N (1-5): the core renders 1 of every N+1 frames and the
+others only run the CPUs. Delete the file (or put 0) to switch it off. Frames
+using display capture are never skipped. Unmeasured on a real console until a
+log is sent back.

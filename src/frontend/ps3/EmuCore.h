@@ -59,6 +59,9 @@ public:
     // 48 kHz) into out. Returns the number of frames copied.
     int ReadAudio(s16* out, int maxFrames);
 
+    // Render 1 of every (n+1) frames; 0 = every frame.
+    void SetFrameSkip(int n);
+
     Context& Ctx() { return Ctx_; }
 
 private:

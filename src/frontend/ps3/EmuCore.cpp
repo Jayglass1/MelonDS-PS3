@@ -135,6 +135,12 @@ int EmuCore::ReadAudio(s16* out, int maxFrames)
     return (avail > 0) ? Console->SPU.ReadOutput(out, avail) : 0;
 }
 
+void EmuCore::SetFrameSkip(int n)
+{
+    if (Console)
+        Console->GPU.FrameSkip = n < 0 ? 0 : n;
+}
+
 bool EmuCore::RunFrame(u32 pressedKeys, bool touching, int touchX, int touchY)
 {
     if (!Console || Ctx_.StopRequested)
