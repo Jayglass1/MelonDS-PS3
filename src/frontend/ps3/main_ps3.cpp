@@ -126,6 +126,7 @@ static int Run(int argc, char** argv)
 
         if (frame < 3) Log("frame %u: RunFrame", frame);
         long long t0 = NowUs();
+        if (frame < 3) Log("frame %u: clock ok", frame);
         if (!core.RunFrame(in.Keys, in.Touching, in.TouchX, in.TouchY))
         {
             Log("exit: console stopped after %u frames", frame);
@@ -133,6 +134,7 @@ static int Run(int argc, char** argv)
         }
 
         long long t1 = NowUs();
+        if (frame < 3) Log("frame %u: RunFrame returned after %lld us", frame, t1 - t0);
         if (haveAudio)
         {
             if (frame < 3) Log("frame %u: audio", frame);
