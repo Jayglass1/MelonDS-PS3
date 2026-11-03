@@ -8,7 +8,7 @@
 namespace melonds_prof
 {
 enum { ARM9, ARM7, GEOM, SYS, DRAW2D, RENDER3D, FINISH3D, CLEAR3D, SETUP3D, RASTER3D, FINAL3D, COUNT };
-inline unsigned long long Polys, Renders;
+inline unsigned long long Polys, Renders, PixTested, PixShaded;
 inline unsigned int LastDispCnt;
 inline unsigned long long Ticks[COUNT];
 inline unsigned long long Now()
@@ -19,9 +19,11 @@ inline unsigned long long Now()
 }
 }
 #define PROF_BEGIN(name) unsigned long long prof_t_##name = melonds_prof::Now()
+#define PROF_COUNT(name) (++melonds_prof::name)
 #define PROF_END(name) (melonds_prof::Ticks[melonds_prof::name] += melonds_prof::Now() - prof_t_##name)
 #else
 #define PROF_BEGIN(name)
+#define PROF_COUNT(name)
 #define PROF_END(name)
 #endif
 

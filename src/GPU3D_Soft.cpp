@@ -1133,6 +1133,7 @@ void SoftRenderer3D::RenderPolygonScanline(RendererPolygon* rp, s32 y)
         }
 
         interpX.SetX(x);
+        PROF_COUNT(PixTested);
 
         s32 z = interpX.InterpolateZ(zl, zr);
 
@@ -1148,6 +1149,7 @@ void SoftRenderer3D::RenderPolygonScanline(RendererPolygon* rp, s32 y)
                 continue;
         }
 
+        PROF_COUNT(PixShaded);
         u32 vr = interpX.Interpolate(rl, rr);
         u32 vg = interpX.Interpolate(gl, gr);
         u32 vb = interpX.Interpolate(bl, br);
@@ -1229,6 +1231,7 @@ void SoftRenderer3D::RenderPolygonScanline(RendererPolygon* rp, s32 y)
         }
 
         interpX.SetX(x);
+        PROF_COUNT(PixTested);
 
         s32 z = interpX.InterpolateZ(zl, zr);
 
@@ -1244,6 +1247,7 @@ void SoftRenderer3D::RenderPolygonScanline(RendererPolygon* rp, s32 y)
                 continue;
         }
 
+        PROF_COUNT(PixShaded);
         u32 vr = interpX.Interpolate(rl, rr);
         u32 vg = interpX.Interpolate(gl, gr);
         u32 vb = interpX.Interpolate(bl, br);
@@ -1321,6 +1325,7 @@ void SoftRenderer3D::RenderPolygonScanline(RendererPolygon* rp, s32 y)
         }
 
         interpX.SetX(x);
+        PROF_COUNT(PixTested);
 
         s32 z = interpX.InterpolateZ(zl, zr);
 
@@ -1336,6 +1341,7 @@ void SoftRenderer3D::RenderPolygonScanline(RendererPolygon* rp, s32 y)
                 continue;
         }
 
+        PROF_COUNT(PixShaded);
         u32 vr = interpX.Interpolate(rl, rr);
         u32 vg = interpX.Interpolate(gl, gr);
         u32 vb = interpX.Interpolate(bl, br);

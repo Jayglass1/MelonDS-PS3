@@ -167,7 +167,10 @@ static int Run(int argc, char** argv)
                 Log("prof3d ms/frame: clear %.1f setup %.1f raster %.1f final %.1f | renders %llu polys/render %.1f dispcnt %08X",
                     ms(Ticks[CLEAR3D]), ms(Ticks[SETUP3D]), ms(Ticks[RASTER3D]), ms(Ticks[FINAL3D]),
                     (unsigned long long)Renders, Renders ? (double)Polys / (double)Renders : 0.0, LastDispCnt);
-                Polys = Renders = 0;
+                Log("prof3d pixels/frame: depth-tested %.0f shaded %.0f | raster %.0f ns per shaded pixel",
+                    Renders ? (double)PixTested / (double)Renders : 0.0, Renders ? (double)PixShaded / (double)Renders : 0.0,
+                    PixShaded ? (double)Ticks[RASTER3D] / 79.8 * 1000.0 / (double)PixShaded : 0.0);
+                Polys = Renders = PixTested = PixShaded = 0;
                 for (int i = 0; i < COUNT; i++) Ticks[i] = 0;
             }
 #endif
