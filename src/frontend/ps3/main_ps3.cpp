@@ -120,7 +120,12 @@ static int Run(int argc, char** argv)
     // frames each (0 normal, 1 32-bit divide, 2 no textures, 3 both). Visuals
     // change while it runs; it only exists to time the renderer.
     bool benchOn = false;
-    { FILE* bf = fopen((dataDir + "bench3d").c_str(), "r"); if (bf) { benchOn = true; fclose(bf); } }
+    {
+        FILE* bf = fopen((dataDir + "bench3d").c_str(), "r");
+        if (!bf) bf = fopen((dataDir + "bench3d.txt").c_str(), "r");
+        if (bf) { benchOn = true; fclose(bf); }
+        Log("bench3d: %s (switch file %sbench3d)", benchOn ? "ON" : "off", dataDir.c_str());
+    }
     unsigned benchWindow = 0;
     long long tEmu = 0, tAudio = 0, tPresent = 0, tWindow = NowUs();
     while (true)
