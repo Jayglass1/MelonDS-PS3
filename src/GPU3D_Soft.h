@@ -20,6 +20,7 @@
 
 #include "GPU.h"
 #include "GPU3D.h"
+#include "Prof.h"
 #include "Platform.h"
 #include <thread>
 #include <atomic>
@@ -147,7 +148,7 @@ private:
         static constexpr s32 MulDiv(s32 a, s32 b, s32 d)
         {
             s64 p = (s64)a * b;
-            if (p > INT32_MIN && p <= INT32_MAX)
+            if ((melonds_prof::Mode & 1) && p > INT32_MIN && p <= INT32_MAX)
                 return (s32)p / d;
             return (s32)(p / d);
         }

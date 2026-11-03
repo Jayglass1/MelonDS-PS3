@@ -4,6 +4,13 @@
 #ifndef MELONDS_PROF_H
 #define MELONDS_PROF_H
 
+namespace melonds_prof
+{
+// Benchmark switches (bit0: 32-bit divide path, bit1: skip texture lookup).
+// Only the PS3 frontend's bench3d switch file ever sets this; 0 = normal.
+inline int Mode = 0;
+}
+
 #ifdef MELONDS_PS3_PROFILE
 namespace melonds_prof
 {
