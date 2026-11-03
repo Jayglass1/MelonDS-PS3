@@ -79,7 +79,11 @@ void Present(const u32* top, const u32* bottom)
     waitflip();
 
     rsxBuffer& buf = buffers[currentBuffer];
-    memset(buf.ptr, 0, (size_t)buf.width * buf.height * sizeof(u32));
+    // No per-frame clear: init_screen zeroes both buffers and every frame
+    // overwrites the same screen rectangles. The clear wrote 8 MB of video
+    // memory per frame, a large part of the ~7 ms Present time.
+    if (!top || !bottom)
+        memset(buf.ptr, 0, (size_t)buf.width * buf.height * sizeof(u32));
 
     // Both screens stacked and centered at 1x. TODO: scaling.
     int x0 = ((int)buf.width - ScreenWidth) / 2;
