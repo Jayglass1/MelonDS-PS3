@@ -7,7 +7,9 @@
 #ifdef MELONDS_PS3_PROFILE
 namespace melonds_prof
 {
-enum { ARM9, ARM7, GEOM, SYS, DRAW2D, RENDER3D, FINISH3D, COUNT };
+enum { ARM9, ARM7, GEOM, SYS, DRAW2D, RENDER3D, FINISH3D, CLEAR3D, SETUP3D, RASTER3D, FINAL3D, COUNT };
+inline unsigned long long Polys, Renders;
+inline unsigned int LastDispCnt;
 inline unsigned long long Ticks[COUNT];
 inline unsigned long long Now()
 {

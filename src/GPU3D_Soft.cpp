@@ -17,6 +17,7 @@
 */
 
 #include "GPU3D_Soft.h"
+#include "Prof.h"
 
 #include <algorithm>
 #include <stdio.h>
@@ -1712,25 +1713,31 @@ void SoftRenderer3D::ClearBuffers()
 void SoftRenderer3D::RenderPolygons(bool threaded, Polygon** polygons, int npolys)
 {
     int j = 0;
+    PROF_BEGIN(SETUP3D);
     for (int i = 0; i < npolys; i++)
     {
         if (polygons[i]->Degenerate) continue;
         SetupPolygon(&PolygonList[j++], polygons[i]);
     }
+    PROF_END(SETUP3D);
+#ifdef MELONDS_PS3_PROFILE
+    melonds_prof::Polys += j; melonds_prof::Renders++;
+    melonds_prof::LastDispCnt = (unsigned int)GPU3D.RenderDispCnt;
+#endif
 
-    RenderScanline(0, j);
+    { PROF_BEGIN(RASTER3D); RenderScanline(0, j); PROF_END(RASTER3D); }
 
     for (s32 y = 1; y < 192; y++)
     {
-        RenderScanline(y, j);
-        ScanlineFinalPass(y-1);
+        { PROF_BEGIN(RASTER3D); RenderScanline(y, j); PROF_END(RASTER3D); }
+        { PROF_BEGIN(FINAL3D); ScanlineFinalPass(y-1); PROF_END(FINAL3D); }
 
         if (threaded)
             // Notify the main thread that we're done with a scanline.
             Platform::Semaphore_Post(Sema_ScanlineCount);
     }
 
-    ScanlineFinalPass(191);
+    { PROF_BEGIN(FINAL3D); ScanlineFinalPass(191); PROF_END(FINAL3D); }
 
     if (threaded)
         // If this renderer is threaded, notify the main thread that we're done with the frame.
@@ -1760,7 +1767,7 @@ void SoftRenderer3D::RenderFrame()
     }
     else if (!FrameIdentical)
     {
-        ClearBuffers();
+        { PROF_BEGIN(CLEAR3D); ClearBuffers(); PROF_END(CLEAR3D); }
         RenderPolygons(false, &GPU3D.RenderPolygonRAM[0], GPU3D.RenderNumPolygons);
     }
 }

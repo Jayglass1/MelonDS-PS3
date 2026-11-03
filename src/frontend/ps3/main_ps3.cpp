@@ -164,6 +164,10 @@ static int Run(int argc, char** argv)
                 Log("prof ms/frame: arm9 %.1f arm7 %.1f geom %.1f 2d %.1f 3d %.1f other-system %.1f",
                     ms(Ticks[ARM9]), ms(Ticks[ARM7]), ms(Ticks[GEOM]),
                     ms(Ticks[DRAW2D]), ms(Ticks[RENDER3D]), sys);
+                Log("prof3d ms/frame: clear %.1f setup %.1f raster %.1f final %.1f | renders %llu polys/render %.1f dispcnt %08X",
+                    ms(Ticks[CLEAR3D]), ms(Ticks[SETUP3D]), ms(Ticks[RASTER3D]), ms(Ticks[FINAL3D]),
+                    (unsigned long long)Renders, Renders ? (double)Polys / (double)Renders : 0.0, LastDispCnt);
+                Polys = Renders = 0;
                 for (int i = 0; i < COUNT; i++) Ticks[i] = 0;
             }
 #endif
