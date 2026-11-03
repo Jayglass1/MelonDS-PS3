@@ -21,6 +21,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include "NDS.h"
+#include "Prof.h"
 #include "ARM.h"
 #include "NDSCart.h"
 #include "GBACart.h"
@@ -1004,11 +1005,15 @@ u32 NDS::RunFrame()
                 }
                 else
                 {
+                    PROF_BEGIN(ARM9);
                     ARM9.Execute<cpuMode>();
+                    PROF_END(ARM9);
                 }
 
                 RunTimers(0);
+                PROF_BEGIN(GEOM);
                 GPU.GPU3D.Run();
+                PROF_END(GEOM);
 
                 target = ARM9Timestamp >> ARM9ClockShift;
                 CurCPU = 1;
@@ -1031,13 +1036,17 @@ u32 NDS::RunFrame()
                     }
                     else
                     {
+                        PROF_BEGIN(ARM7);
                         ARM7.Execute<cpuMode>();
+                        PROF_END(ARM7);
                     }
 
                     RunTimers(1);
                 }
 
+                PROF_BEGIN(SYS);
                 RunSystem(target);
+                PROF_END(SYS);
 
                 if (CPUStop & CPUStop_Sleep)
                 {

@@ -48,7 +48,7 @@ OBJS := \
 INCLUDES := -I. -Igen -I$(SRC) -I$(SRC)/teakra/include -I$(SRC)/teakra/src \
 	-I$(PSL1GHT)/ppu/include -I$(PORTLIBS)/include
 
-COMMON := -mcpu=cell -O3 -fwrapv -DMELONDS_PS3=1 $(INCLUDES)
+COMMON := -mcpu=cell -O3 -fwrapv -DMELONDS_PS3=1 -DMELONDS_PS3_PROFILE=1 $(INCLUDES)
 # std::mutex / std::to_string stand-ins (see compat.h); C++ only
 CXXCOMPAT := -include compat.h
 CXXFLAGS := $(COMMON) $(CXXCOMPAT) -std=gnu++17 -Wno-invalid-offsetof

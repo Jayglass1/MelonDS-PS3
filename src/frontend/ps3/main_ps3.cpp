@@ -17,6 +17,7 @@
 #include "Input.h"
 #include "Log.h"
 #include "Video.h"
+#include "../../Prof.h"
 
 using namespace melonDS;
 using namespace melonDS::PS3Frontend;
@@ -154,6 +155,18 @@ static int Run(int argc, char** argv)
             long long wall = t3 - tWindow;
             Log("perf: %.1f fps | per frame us: emu %lld audio %lld present %lld | skip %d",
                 120.0 * 1e6 / (double)wall, tEmu / 120, tAudio / 120, tPresent / 120, frameSkip);
+#ifdef MELONDS_PS3_PROFILE
+            {
+                using namespace melonds_prof;
+                auto ms = [](unsigned long long t) { return (double)t / 79800.0 / 120.0; };
+                // SYS includes the 2D and 3D draw calls made from its events.
+                double sys = ms(Ticks[SYS]) - ms(Ticks[DRAW2D]) - ms(Ticks[RENDER3D]);
+                Log("prof ms/frame: arm9 %.1f arm7 %.1f geom %.1f 2d %.1f 3d %.1f other-system %.1f",
+                    ms(Ticks[ARM9]), ms(Ticks[ARM7]), ms(Ticks[GEOM]),
+                    ms(Ticks[DRAW2D]), ms(Ticks[RENDER3D]), sys);
+                for (int i = 0; i < COUNT; i++) Ticks[i] = 0;
+            }
+#endif
             tEmu = tAudio = tPresent = 0;
             tWindow = t3;
         }

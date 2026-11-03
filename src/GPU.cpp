@@ -19,6 +19,7 @@
 #include <string.h>
 #include "NDS.h"
 #include "GPU.h"
+#include "Prof.h"
 
 #include "ARMJIT.h"
 
@@ -1171,17 +1172,24 @@ void GPU::StartHBlank(u32 line) noexcept
         // note: this should start 48 cycles after the scanline start
         if (!SkipThisFrame)
         {
+            PROF_BEGIN(DRAW2D);
             if (line < 192)
                 Rend->DrawScanline(line);
             if (line < 191)
                 Rend->DrawSprites(line+1);
+            PROF_END(DRAW2D);
         }
 
         NDS.CheckDMAs(0, 0x02);
     }
     else if (VCount == 215)
     {
-        if (!SkipNextFrame) Rend->Start3DRendering();
+        if (!SkipNextFrame)
+        {
+            PROF_BEGIN(RENDER3D);
+            Rend->Start3DRendering();
+            PROF_END(RENDER3D);
+        }
     }
     else if (VCount == 262)
     {
