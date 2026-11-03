@@ -10,7 +10,6 @@
 #include <string>
 
 #include <sys/process.h>
-#include <lv2/systime.h>
 
 #include "Audio.h"
 #include "EmuCore.h"
@@ -48,9 +47,18 @@ static int ReadFrameSkip(const std::string& dir)
     return n < 0 ? 0 : (n > 5 ? 5 : n);
 }
 
+// Read the PowerPC timebase register directly (no system call). The PS3 timebase
+// runs at 79.8 MHz. The first version used sysGetSystemTime() and the app
+// stopped right after "frame 0: RunFrame", so no OS call is used here.
 static long long NowUs()
 {
-    return (long long)sysGetSystemTime(); // microseconds
+    unsigned long long tb;
+#if defined(__powerpc64__)
+    __asm__ volatile("mftb %0" : "=r"(tb));
+#else
+    tb = 0;
+#endif
+    return (long long)(tb / 80ull); // ~79.8 ticks per microsecond
 }
 
 static int Run(int argc, char** argv)
