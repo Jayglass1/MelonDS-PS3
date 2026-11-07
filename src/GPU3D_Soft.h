@@ -20,7 +20,6 @@
 
 #include "GPU.h"
 #include "GPU3D.h"
-#include "Prof.h"
 #include "Platform.h"
 #include <thread>
 #include <atomic>
@@ -142,17 +141,6 @@ private:
             }
         }
 
-        // (a * b) / d with the same result as the original 64-bit expression
-        // (truncation toward zero), but using the much cheaper 32-bit divide
-        // whenever the product fits. The 64-bit divide is slow on the PS3's PPE.
-        static constexpr s32 MulDiv(s32 a, s32 b, s32 d)
-        {
-            s64 p = (s64)a * b;
-            if ((melonds_prof::Mode & 1) && p > INT32_MIN && p <= INT32_MAX)
-                return (s32)p / d;
-            return (s32)(p / d);
-        }
-
         constexpr s32 Interpolate(s32 y0, s32 y1) const
         {
             if (xdiff == 0 || y0 == y1) return y0;
@@ -169,9 +157,9 @@ private:
             {
                 // linear interpolation
                 if (y0 < y1)
-                    return y0 + MulDiv(y1-y0, x, xdiff);
+                    return y0 + (s64)(y1-y0) * x / xdiff;
                 else
-                    return y1 + MulDiv(y0-y1, xdiff - x, xdiff);
+                    return y1 + (s64)(y0-y1) * (xdiff - x) / xdiff;
             }
         }
 

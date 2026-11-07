@@ -116,17 +116,6 @@ static int Run(int argc, char** argv)
     const int frameSkip = ReadFrameSkip(dataDir);
     core.SetFrameSkip(frameSkip);
     Log("frameskip: %d (switch file %sframeskip)", frameSkip, dataDir.c_str());
-    // bench3d switch file: cycles the 3D renderer through 4 test modes, 120
-    // frames each (0 normal, 1 32-bit divide, 2 no textures, 3 both). Visuals
-    // change while it runs; it only exists to time the renderer.
-    bool benchOn = false;
-    {
-        FILE* bf = fopen((dataDir + "bench3d").c_str(), "r");
-        if (!bf) bf = fopen((dataDir + "bench3d.txt").c_str(), "r");
-        if (bf) { benchOn = true; fclose(bf); }
-        Log("bench3d: %s (switch file %sbench3d)", benchOn ? "ON" : "off", dataDir.c_str());
-    }
-    unsigned benchWindow = 0;
     long long tEmu = 0, tAudio = 0, tPresent = 0, tWindow = NowUs();
     while (true)
     {
@@ -175,19 +164,14 @@ static int Run(int argc, char** argv)
                 Log("prof ms/frame: arm9 %.1f arm7 %.1f geom %.1f 2d %.1f 3d %.1f other-system %.1f",
                     ms(Ticks[ARM9]), ms(Ticks[ARM7]), ms(Ticks[GEOM]),
                     ms(Ticks[DRAW2D]), ms(Ticks[RENDER3D]), sys);
-                Log("prof3d mode %d ms/frame: clear %.1f setup %.1f raster %.1f final %.1f | renders %llu polys/render %.1f dispcnt %08X",
-                    melonds_prof::Mode, ms(Ticks[CLEAR3D]), ms(Ticks[SETUP3D]), ms(Ticks[RASTER3D]), ms(Ticks[FINAL3D]),
+                Log("prof3d ms/frame: clear %.1f setup %.1f raster %.1f final %.1f | renders %llu polys/render %.1f dispcnt %08X",
+                    ms(Ticks[CLEAR3D]), ms(Ticks[SETUP3D]), ms(Ticks[RASTER3D]), ms(Ticks[FINAL3D]),
                     (unsigned long long)Renders, Renders ? (double)Polys / (double)Renders : 0.0, LastDispCnt);
                 Polys = Renders = 0;
                 for (int i = 0; i < COUNT; i++) Ticks[i] = 0;
             }
 #endif
             tEmu = tAudio = tPresent = 0;
-            if (benchOn)
-            {
-                benchWindow++;
-                melonds_prof::Mode = (int)(benchWindow % 4);
-            }
             tWindow = t3;
         }
         if (frame < 3) Log("frame %u: done", frame);
